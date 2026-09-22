@@ -3,22 +3,22 @@ package server
 import (
 	"log"
 	"net/http"
-	_package "server/pkg/package"
+	"server/pkg/packets"
 )
 
 type ClientInterfacer interface {
 	Id() uint64
-	ProcessMessage(senderId uint64, message _package.Msg)
+	ProcessMessage(senderId uint64, message packets.Msg)
 
 	Initialize(id uint64)
 
-	SocketSend(message _package.Msg)
+	SocketSend(message packets.Msg)
 
-	SocketSendAs(message _package.Msg, senderId uint64)
+	SocketSendAs(message packets.Msg, senderId uint64)
 
-	PassToPeer(message _package.Msg, peerId uint64)
+	PassToPeer(message packets.Msg, peerId uint64)				
 
-	Broadcasr(message _package.Msg)
+	Broadcast(message packets.Msg)
 
 	ReadPump()
 
@@ -28,16 +28,16 @@ type ClientInterfacer interface {
 }
 
 type Hub struct {
-	Client         map[uint64]ClientInterfacer
-	BroadcastChan  chan _package.Packet
+	Clients        map[uint64]ClientInterfacer
+	BroadcastChan  chan *packets.Packet
 	RegisterChan   chan ClientInterfacer
 	UnregisterChan chan ClientInterfacer
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		Client:         make(map[uint64]ClientInterfacer),
-		BroadcastChan:  make(chan _package.Packet),
+		Clients:         make(map[uint64]ClientInterfacer),
+		BroadcastChan:  make(chan *packets.Packet),
 		RegisterChan:   make(chan ClientInterfacer),
 		UnregisterChan: make(chan ClientInterfacer),
 	}
@@ -48,11 +48,11 @@ func (h *Hub) Run() {
 	for {
 		select {
 		case client := <-h.RegisterChan:
-			client.Initialize(uint64(len(h.Client)))
+			client.Initialize(uint64(len(h.Clients)))
 		case client := <-h.UnregisterChan:
-			h.Client[client.Id()] = nil
+			h.Clients[client.Id()] = nil
 		case packet := <-h.BroadcastChan:
-			for id, client := range h.Client {
+			for id, client := range h.Clients {
 				if id != packet.SenderId {
 					client.ProcessMessage(packet.SenderId, packet.Msg)
 				}

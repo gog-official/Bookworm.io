@@ -1,13 +1,34 @@
 package main
-import(
-	"fmt"
-	_package "server/pkg/package"
 
-	"google.golang.org/protobuf/proto"
+import (
+	"flag"
+	"fmt"
+	"log"
+	"net/http"
+
+	"server/internal/server"
+	"server/internal/server/clients"
 )
-func main(){
-	data := []byte{8,69,18,13,10,11,72,101,108,108,111,44,87,111,114,100,33}
-	packet := &_package.Packet{}
-	proto.Unmarshal(data,packet)
-	fmt.Println(packet)
+
+var (
+	port = flag.Int("port", 8080, "Port to listen on")
+)
+
+func main() {
+	flag.Parse()
+
+	hub := server.NewHub()
+
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		hub.Serve(clients.NewWebSocketClient, w, r)
+	})
+	go hub.Run()
+	addr := fmt.Sprintf("%d", *port)
+
+	log.Printf("Starting server on %s", addr)
+	err := http.ListenAndServe(addr, nil)
+
+	if err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }

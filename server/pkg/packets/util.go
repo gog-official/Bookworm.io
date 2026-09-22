@@ -1,4 +1,4 @@
-package _package
+package packets
 
 type Msg = isPacket_Msg
 

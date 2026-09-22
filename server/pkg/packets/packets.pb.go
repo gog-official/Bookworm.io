@@ -4,7 +4,7 @@
 // 	protoc        v7.36.0
 // source: packets.proto
 
-package _package
+package packets
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -214,7 +214,7 @@ const file_packets_proto_rawDesc = "" +
 	"\tsender_id\x18\x01 \x01(\x04R\bsenderId\x12*\n" +
 	"\x04chat\x18\x02 \x01(\v2\x14.packets.ChatMessageH\x00R\x04chat\x12$\n" +
 	"\x02id\x18\x03 \x01(\v2\x12.packets.IdMessageH\x00R\x02idB\x05\n" +
-	"\x03msgB\rZ\vpkg/packageb\x06proto3"
+	"\x03msgB\rZ\vpkg/packetsb\x06proto3"
 
 var (
 	file_packets_proto_rawDescOnce sync.Once
