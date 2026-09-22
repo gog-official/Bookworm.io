@@ -23,7 +23,7 @@ func main() {
 		hub.Serve(clients.NewWebSocketClient, w, r)
 	})
 	go hub.Run()
-	addr := fmt.Sprintf("%d", *port)
+	addr := fmt.Sprintf(":%d", *port)
 
 	log.Printf("Starting server on %s", addr)
 	err := http.ListenAndServe(addr, nil)
