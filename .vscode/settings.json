@@ -1,0 +1,6 @@
+{
+    "protobuf.externalLinter.enabled": true,
+    "protobuf.externalLinter.linter": "buf",
+    "protobuf.externalLinter.bufPath": "c:\\Users\\USER\\AppData\\Roaming\\Code\\User\\globalStorage\\drblury.protobuf-vsc\\bin\\buf.exe",
+    "protobuf.protoc.path": "c:\\Users\\USER\\AppData\\Roaming\\Code\\User\\globalStorage\\drblury.protobuf-vsc\\bin\\protoc.exe"
+}
