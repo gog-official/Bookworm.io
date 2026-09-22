@@ -46,14 +46,14 @@ func (c *WebSocketsClient) Initialize(id uint64) {
 	c.logger.SetPrefix(fmt.Sprintf("clinet %d", c.id))
 }
 
-func (c *WebSocketsClient) ProcessMessage(senderId uint64, message packets.Msg) {
+func (c *WebSocketsClient) ProcessMessage(senderId uint64, message _package.Msg) {
 }
 func (c *WebSocketsClient) SocketSend(message _package.Msg) {
 	c.SocketSendAs(message, c.id)
 }
-func (c *WebSocketsClient) SocketSendAs(message packets.Msg, senderId uint64) {
+func (c *WebSocketsClient) SocketSendAs(message _package.Msg, senderId uint64) {
 	select {
-	case c.sendChan <- &_package.Packet{SenderId: senderId, Msg: message}:
+	case c.sendChan <- _package.Packet{SenderId: senderId, Msg: message}:
 	default:
 		c.logger.Printf("Client %d send channel full, dropping message: %T", c.id, message)
 	}
