@@ -9,7 +9,7 @@ import (
 
 type Connected struct {
 	client server.ClientInterfacer
-	logger *log.logger
+	logger *log.Logger
 }
 
 func (c *Connected) Name() string {
@@ -18,12 +18,17 @@ func (c *Connected) Name() string {
 func (c *Connected) SetClient(client server.ClientInterfacer) {
 	c.client = client
 	loggingPrefix := fmt.Sprintf("Client %d [%s]: ", client.Id(), c.Name())
-	c.logger = log.new(log.new(log.Writer(), loggingPrefix, log.LstdFlags))
+	c.logger = log.New(log.Writer(), loggingPrefix, log.LstdFlags)	
 }
 func (c *Connected) OnEnter() {
 	c.client.SocketSend(packets.NewId(c.client.Id()))
 }
 func (c *Connected) HandleMessage(senderId uint64, message packets.Msg) {
+	if senderId == c.client.Id(){
+		c.client.Broadcast(message)
+	}else {
+		c.client.SocketSendAs(message, senderId)
+	}
 }
 
 func (c *Connected) OnExit() {
