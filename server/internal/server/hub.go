@@ -15,7 +15,7 @@ import (
 
 	_ "modernc.org/sqlite"
 )
-
+//go:embed db/config/schema.sql
 var schemaGenSql string
 
 type ClientInterfacer interface {
@@ -67,17 +67,19 @@ type ClientStateHandler interface {
 
 func NewHub() *Hub {
 	dbPool, err := sql.Open("sqlite", "db.sqlite")
-	
 	if err != nil {
 		log.Fatal(err)
 	}
 	return &Hub{
-		dbPool: dbPool,
+		Clients:        objects.NewSharedCollection[ClientInterfacer](),
+		BroadcastChan:  make(chan *packets.Packet),
+		RegisterChan:   make(chan ClientInterfacer),
+		UnregisterChan: make(chan ClientInterfacer),
+		dbPool:         dbPool,
 		SharedGameObjects: &SharedGameObjects{
 			Players: objects.NewSharedCollection[*objects.Player](),
 		},
 	}
-	
 }
 
 type DbTx struct {

@@ -33,16 +33,6 @@ func (c *Connected) SetClient(client server.ClientInterfacer) {
 }
 func (c *Connected) OnEnter() {
 	c.client.SocketSend(packets.NewId(c.client.Id()))
-	user, err := c.client.DbTx().Queries.CreateUser(c.client.DbTx().Ctx, db.CreateUserParams{
-		Username: "username",
-		PasswordHash: "password hash",
-	})
-
-	if err != nil{
-		c.logger.Printf("Failed to create user: %v", err)
-	}else{
-		c.logger.Printf("Created user: %v", user)
-	}
 }
 
 func (c *Connected) HandleMessage(senderId uint64, message packets.Msg) {
