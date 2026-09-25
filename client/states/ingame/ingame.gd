@@ -14,7 +14,6 @@ func _ready() -> void:
 	_line_edit.text_submitted.connect(_on_line_edit_text_submitted)
 	WsClient.connection_closed.connect(_on_ws_connection_closed)
 	WsClient.packet_received.connect(_on_ws_packet_recieved)
-# Cal	_line_edit.text_submitted.connect(_on_line_edit_text_submitted)
 func _process(delta: float) -> void:
 	pass
 
@@ -53,11 +52,8 @@ func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> vo
 
 	var is_player := actor_id == GameManager.client_id
 
-	var actor := Actor.instantiate(actor_id, actor_name, x, y, radius, speed, is_player)
-	_world.add_child(actor)
-
 	if actor_id not in _players:
-		var actor := Actor.instantiate(actor_id, actor_name,x,y,radius,speed,is_player)
+		var actor := Actor.instantiate(actor_id, actor_name, x, y, radius, speed, is_player)
 		_world.add_child(actor)
 		_players[actor_id] = actor
 	else:

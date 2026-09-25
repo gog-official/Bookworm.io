@@ -17,7 +17,7 @@ var radius: float
 
 @onready var _nameplate: Label = $Label
 @onready var _cam: Camera2D = $Camera2D
-@onready var _collision_shape: CircleShape2D = $CollitionShape2D
+@onready var _collision_shape: CircleShape2D = $CollisionShape2D.shape
 
 static func instantiate(actor_id: int, actor_name: String, x: float, y: float, radius: float, speed: float, is_player: bool) -> Actor:
 	var actor := Scene.instantiate()
@@ -66,8 +66,8 @@ func _input(event):
 	if is_player and event is InputEventMouseButton and event.is_pressed():
 		match event.button_index:
 			MOUSE_BUTTON_WHEEL_UP:
-				_camera.zoom.x = min(4, _camera.zoom.x + 0.1)
+				_cam.zoom.x = min(4, _cam.zoom.x + 0.1)
+				_cam.zoom.y = _cam.zoom.x
 			MOUSE_BUTTON_WHEEL_DOWN:
-				_camera.zoom.x = max(0.1, _camera.zoom.x - 0.1)
-			
-			_camera.zoom.y = _camera.zoom.x
+				_cam.zoom.x = max(0.1, _cam.zoom.x - 0.1)
+				_cam.zoom.y = _cam.zoom.x
