@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cvxa36bcx5dbj" path="res://states/ingame/ingame.gd" id="1_0uskn"]
 [ext_resource type="Script" uid="uid://j22s314pk4mi" path="res://classes/log/log.gd" id="1_b7vyf"]
+[ext_resource type="Texture2D" uid="uid://blnuxwawwgxit" path="res://resources/floor.svg" id="3_q22go"]
 
 [node name="Ingame" type="Node" unique_id=295665299]
 script = ExtResource("1_0uskn")
@@ -21,3 +22,11 @@ offset_left = 20.0
 offset_top = 593.0
 offset_right = 399.0
 offset_bottom = 624.0
+
+[node name="World" type="Node2D" parent="." unique_id=295413523]
+
+[node name="Floor" type="Sprite2D" parent="World" unique_id=61571171]
+texture_repeat = 2
+texture = ExtResource("3_q22go")
+region_enabled = true
+region_rect = Rect2(0, 0, 10000, 10000)

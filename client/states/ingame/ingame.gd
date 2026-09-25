@@ -1,9 +1,13 @@
 extends Node
 
 const packets := preload("res://packets.gd")
+const Actor := preload("res://objects/actor/actor.gd")
+
+var _players: Dictionary[int, Actor]
 
 @onready var _line_edit: LineEdit = $UI/LineEdit
 @onready var _log: Log = $UI/Log
+@onready var _world: Node2D = $World
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -21,6 +25,8 @@ func _on_ws_packet_recieved(packet: packets.Packet) -> void:
 	var sender_id := packet.get_sender_id()
 	if packet.has_chat():
 		_handle_chat_msg(sender_id, packet.get_chat())
+	elif packet.has_player():
+		_handle_player_msg(sender_id, packet.get_player())
 
 func _handle_chat_msg(sender_id: int, chat_msg: packets.ChatMessage) -> void:
 	_log.chat("Client %d" % sender_id, chat_msg.get_msg())
@@ -36,3 +42,25 @@ func _on_line_edit_text_submitted(txt: String) -> void:
 	else:
 		_log.chat("You", txt)
 		_line_edit.text = ""
+
+func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> void:
+	var actor_id := player_msg.get_id()
+	var actor_name := player_msg.get_name()
+	var x := player_msg.get_x()
+	var y := player_msg.get_y()
+	var radius := player_msg.get_radius()
+	var speed := player_msg.get_speed()
+
+	var is_player := actor_id == GameManager.client_id
+
+	var actor := Actor.instantiate(actor_id, actor_name, x, y, radius, speed, is_player)
+	_world.add_child(actor)
+
+	if actor_id not in _players:
+		var actor := Actor.instantiate(actor_id, actor_name,x,y,radius,speed,is_player)
+		_world.add_child(actor)
+		_players[actor_id] = actor
+	else:
+		var actor := _players[actor_id]
+		actor.position.x = x
+		actor.position.y = y
