@@ -9,16 +9,17 @@ var _players: Dictionary[int, Actor]
 @onready var _log: Log = $UI/Log
 @onready var _world: Node2D = $World
 
+
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	_line_edit.text_submitted.connect(_on_line_edit_text_submitted)
 	WsClient.connection_closed.connect(_on_ws_connection_closed)
 	WsClient.packet_received.connect(_on_ws_packet_recieved)
-func _process(delta: float) -> void:
-	pass
+
 
 func _on_ws_connection_closed() -> void:
 	_log.error("Connection closed")
+
 
 func _on_ws_packet_recieved(packet: packets.Packet) -> void:
 	var sender_id := packet.get_sender_id()
@@ -27,8 +28,12 @@ func _on_ws_packet_recieved(packet: packets.Packet) -> void:
 	elif packet.has_player():
 		_handle_player_msg(sender_id, packet.get_player())
 
+
 func _handle_chat_msg(sender_id: int, chat_msg: packets.ChatMessage) -> void:
-	_log.chat("Client %d" % sender_id, chat_msg.get_msg())
+	if sender_id in _players:
+		var actor := _players[sender_id]
+		_log.chat(actor.actor_name, chat_msg.get_msg())
+
 
 func _on_line_edit_text_submitted(txt: String) -> void:
 	var packet := packets.Packet.new()
@@ -41,6 +46,7 @@ func _on_line_edit_text_submitted(txt: String) -> void:
 	else:
 		_log.chat("You", txt)
 		_line_edit.text = ""
+
 
 func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> void:
 	var actor_id := player_msg.get_id()
@@ -60,3 +66,6 @@ func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> vo
 		var actor := _players[actor_id]
 		actor.position.x = x
 		actor.position.y = y
+
+		var direction := player_msg.get_direction()
+		actor.velocity = speed * Vector2.from_angle(direction)
