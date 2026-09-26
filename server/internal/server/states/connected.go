@@ -51,6 +51,8 @@ func (c *Connected) HandleMessage(senderId uint64, message packets.Msg) {
 		c.handleLoginRequest(senderId, message)
 	case *packets.Packet_RegisterRequest:
 		c.handleRegisterRequest(senderId, message)
+	case *packets.Packet_HiscoreBoardRequest:
+		c.handleHiscoreBoardRequest(senderId, message)
 	}
 }
 func (c *Connected) handleLoginRequest(senderId uint64, message *packets.Packet_LoginRequest) {
@@ -73,14 +75,29 @@ func (c *Connected) handleLoginRequest(senderId uint64, message *packets.Packet_
         c.client.SocketSend(genericFailMessage)
         return
     }
-
-    c.logger.Printf("User %s logged in successfully", username)
+	c.logger.Printf("User %s logged in successfully", username)
     c.client.SocketSend(packets.NewOkResponse())
 	c.client.SetState(&InGame{
 		player: &objects.Player{
 			Name: username,
 		},
 	})
+
+	player, err := c.queries.GetPlayerByUserID(c.dbCtx, user.ID)
+
+	if err != nil{
+		c.logger.Printf("error getting player %s: %v", username, err)
+		c.client.SocketSend(genericFailMessage)
+		return
+	}
+	c.client.SetState(&InGame{
+		player: &objects.Player{
+			Name: player.Name,
+			DbId: player.ID,
+			BestScore: player.BestScore,
+		},
+	})
+    
 }
 func (c *Connected) handleRegisterRequest(senderId uint64, message *packets.Packet_RegisterRequest){
 	if senderId != c.client.Id(){
@@ -112,13 +129,24 @@ func (c *Connected) handleRegisterRequest(senderId uint64, message *packets.Pack
 		return
 	}
 
-	_, err = c.queries.CreateUser(c.dbCtx, db.CreateUserParams{
+	user, err := c.queries.CreateUser(c.dbCtx, db.CreateUserParams{
 		Username: username,
 		PasswordHash: string(passwordHash),
 	})
 
 	if err != nil{
 		c.logger.Printf("Failed to create user %s: %v", username, err)
+		c.client.SocketSend(genericFailMessage)
+		return
+	}
+	
+	_, err = c.queries.CreatePlayer(c.dbCtx, db.CreatePlayerParams{
+		UserID: user.ID,
+		Name: message.RegisterRequest.Username,
+	})
+
+	if err != nil{
+		c.logger.Printf("Failed to create player %s: %v", username, err)
 		c.client.SocketSend(genericFailMessage)
 		return
 	}
@@ -137,6 +165,10 @@ func validateUsername(username string) error {
 		return errors.New("leading or trailing whitespaces")
 	}
 	return nil
+}
+
+func (c *Connected) handleHiscoreBoardRequest(senderId uint64, _ *packets.Packet_HiscoreBoardRequest){
+	c.client.SetState(&BrowsingHiscores{})
 }
 func (c *Connected) OnExit() {
 }

@@ -11,7 +11,14 @@ message OkResponseMessage{}
 message DenyResponseMessage{ string reason = 2; }
 message PlayerMessage { uint64 id = 1; string name = 2; double x =3; double y = 4; double radius = 5; double direction = 6; double speed = 7; }
 message PlayerDirectionMessage { double direction = 1; }
-
+message SporeMessage { uint64 id =1; double x =2; double y = 3; double radius = 4; }
+message SporeConsumedMessage { uint64 spore_id =1;}
+message PlayerConsumedMessage{ uint64 player_id =1; }
+message HiscoreBoardRequestMessage{ }
+message HiscoreMessage { uint64 rank = 1; string name = 2; uint64 score = 3; }
+message HiscoreBoardMessage { repeated HiscoreMessage hiscores = 1; }
+message FinishedBrowsingHiscoresMessage{ }
+message SearchHiscoreMessage { string name = 1;}
 //the msg packet
 message Packet {
   uint64 sender_id = 1;
@@ -24,5 +31,13 @@ message Packet {
     DenyResponseMessage deny_response = 7;
     PlayerMessage player = 8;
     PlayerDirectionMessage player_direction = 9;
+    SporeMessage spore = 10;
+    SporeConsumedMessage spore_consumed =11;
+    PlayerConsumedMessage player_consumed =13;
+    HiscoreBoardRequestMessage hiscore_board_request = 14;
+    HiscoreBoardMessage hiscore_board = 16;
+    HiscoreMessage hiscore = 15;
+    FinishedBrowsingHiscoresMessage finished_browsing_hiscores = 17;
+    SearchHiscoreMessage search_hiscore = 18;
   }
 }

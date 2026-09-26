@@ -430,6 +430,382 @@ func (x *PlayerDirectionMessage) GetDirection() float64 {
 	return 0
 }
 
+type SporeMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            uint64                 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	X             float64                `protobuf:"fixed64,2,opt,name=x,proto3" json:"x,omitempty"`
+	Y             float64                `protobuf:"fixed64,3,opt,name=y,proto3" json:"y,omitempty"`
+	Radius        float64                `protobuf:"fixed64,4,opt,name=radius,proto3" json:"radius,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SporeMessage) Reset() {
+	*x = SporeMessage{}
+	mi := &file_packets_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SporeMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SporeMessage) ProtoMessage() {}
+
+func (x *SporeMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_packets_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SporeMessage.ProtoReflect.Descriptor instead.
+func (*SporeMessage) Descriptor() ([]byte, []int) {
+	return file_packets_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *SporeMessage) GetId() uint64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *SporeMessage) GetX() float64 {
+	if x != nil {
+		return x.X
+	}
+	return 0
+}
+
+func (x *SporeMessage) GetY() float64 {
+	if x != nil {
+		return x.Y
+	}
+	return 0
+}
+
+func (x *SporeMessage) GetRadius() float64 {
+	if x != nil {
+		return x.Radius
+	}
+	return 0
+}
+
+type SporeConsumedMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SporeId       uint64                 `protobuf:"varint,1,opt,name=spore_id,json=sporeId,proto3" json:"spore_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SporeConsumedMessage) Reset() {
+	*x = SporeConsumedMessage{}
+	mi := &file_packets_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SporeConsumedMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SporeConsumedMessage) ProtoMessage() {}
+
+func (x *SporeConsumedMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_packets_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SporeConsumedMessage.ProtoReflect.Descriptor instead.
+func (*SporeConsumedMessage) Descriptor() ([]byte, []int) {
+	return file_packets_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *SporeConsumedMessage) GetSporeId() uint64 {
+	if x != nil {
+		return x.SporeId
+	}
+	return 0
+}
+
+type PlayerConsumedMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	PlayerId      uint64                 `protobuf:"varint,1,opt,name=player_id,json=playerId,proto3" json:"player_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerConsumedMessage) Reset() {
+	*x = PlayerConsumedMessage{}
+	mi := &file_packets_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerConsumedMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerConsumedMessage) ProtoMessage() {}
+
+func (x *PlayerConsumedMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_packets_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerConsumedMessage.ProtoReflect.Descriptor instead.
+func (*PlayerConsumedMessage) Descriptor() ([]byte, []int) {
+	return file_packets_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *PlayerConsumedMessage) GetPlayerId() uint64 {
+	if x != nil {
+		return x.PlayerId
+	}
+	return 0
+}
+
+type HiscoreBoardRequestMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HiscoreBoardRequestMessage) Reset() {
+	*x = HiscoreBoardRequestMessage{}
+	mi := &file_packets_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HiscoreBoardRequestMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HiscoreBoardRequestMessage) ProtoMessage() {}
+
+func (x *HiscoreBoardRequestMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_packets_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HiscoreBoardRequestMessage.ProtoReflect.Descriptor instead.
+func (*HiscoreBoardRequestMessage) Descriptor() ([]byte, []int) {
+	return file_packets_proto_rawDescGZIP(), []int{11}
+}
+
+type HiscoreMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Rank          uint64                 `protobuf:"varint,1,opt,name=rank,proto3" json:"rank,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Score         uint64                 `protobuf:"varint,3,opt,name=score,proto3" json:"score,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HiscoreMessage) Reset() {
+	*x = HiscoreMessage{}
+	mi := &file_packets_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HiscoreMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HiscoreMessage) ProtoMessage() {}
+
+func (x *HiscoreMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_packets_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HiscoreMessage.ProtoReflect.Descriptor instead.
+func (*HiscoreMessage) Descriptor() ([]byte, []int) {
+	return file_packets_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *HiscoreMessage) GetRank() uint64 {
+	if x != nil {
+		return x.Rank
+	}
+	return 0
+}
+
+func (x *HiscoreMessage) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *HiscoreMessage) GetScore() uint64 {
+	if x != nil {
+		return x.Score
+	}
+	return 0
+}
+
+type HiscoreBoardMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Hiscores      []*HiscoreMessage      `protobuf:"bytes,1,rep,name=hiscores,proto3" json:"hiscores,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *HiscoreBoardMessage) Reset() {
+	*x = HiscoreBoardMessage{}
+	mi := &file_packets_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *HiscoreBoardMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*HiscoreBoardMessage) ProtoMessage() {}
+
+func (x *HiscoreBoardMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_packets_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use HiscoreBoardMessage.ProtoReflect.Descriptor instead.
+func (*HiscoreBoardMessage) Descriptor() ([]byte, []int) {
+	return file_packets_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *HiscoreBoardMessage) GetHiscores() []*HiscoreMessage {
+	if x != nil {
+		return x.Hiscores
+	}
+	return nil
+}
+
+type FinishedBrowsingHiscoresMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *FinishedBrowsingHiscoresMessage) Reset() {
+	*x = FinishedBrowsingHiscoresMessage{}
+	mi := &file_packets_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *FinishedBrowsingHiscoresMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FinishedBrowsingHiscoresMessage) ProtoMessage() {}
+
+func (x *FinishedBrowsingHiscoresMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_packets_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FinishedBrowsingHiscoresMessage.ProtoReflect.Descriptor instead.
+func (*FinishedBrowsingHiscoresMessage) Descriptor() ([]byte, []int) {
+	return file_packets_proto_rawDescGZIP(), []int{14}
+}
+
+type SearchHiscoreMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchHiscoreMessage) Reset() {
+	*x = SearchHiscoreMessage{}
+	mi := &file_packets_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchHiscoreMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchHiscoreMessage) ProtoMessage() {}
+
+func (x *SearchHiscoreMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_packets_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchHiscoreMessage.ProtoReflect.Descriptor instead.
+func (*SearchHiscoreMessage) Descriptor() ([]byte, []int) {
+	return file_packets_proto_rawDescGZIP(), []int{15}
+}
+
+func (x *SearchHiscoreMessage) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
 // the msg packet
 type Packet struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
@@ -444,6 +820,14 @@ type Packet struct {
 	//	*Packet_DenyResponse
 	//	*Packet_Player
 	//	*Packet_PlayerDirection
+	//	*Packet_Spore
+	//	*Packet_SporeConsumed
+	//	*Packet_PlayerConsumed
+	//	*Packet_HiscoreBoardRequest
+	//	*Packet_HiscoreBoard
+	//	*Packet_Hiscore
+	//	*Packet_FinishedBrowsingHiscores
+	//	*Packet_SearchHiscore
 	Msg           isPacket_Msg `protobuf_oneof:"msg"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -451,7 +835,7 @@ type Packet struct {
 
 func (x *Packet) Reset() {
 	*x = Packet{}
-	mi := &file_packets_proto_msgTypes[8]
+	mi := &file_packets_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -463,7 +847,7 @@ func (x *Packet) String() string {
 func (*Packet) ProtoMessage() {}
 
 func (x *Packet) ProtoReflect() protoreflect.Message {
-	mi := &file_packets_proto_msgTypes[8]
+	mi := &file_packets_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -476,7 +860,7 @@ func (x *Packet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Packet.ProtoReflect.Descriptor instead.
 func (*Packet) Descriptor() ([]byte, []int) {
-	return file_packets_proto_rawDescGZIP(), []int{8}
+	return file_packets_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *Packet) GetSenderId() uint64 {
@@ -565,6 +949,78 @@ func (x *Packet) GetPlayerDirection() *PlayerDirectionMessage {
 	return nil
 }
 
+func (x *Packet) GetSpore() *SporeMessage {
+	if x != nil {
+		if x, ok := x.Msg.(*Packet_Spore); ok {
+			return x.Spore
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetSporeConsumed() *SporeConsumedMessage {
+	if x != nil {
+		if x, ok := x.Msg.(*Packet_SporeConsumed); ok {
+			return x.SporeConsumed
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetPlayerConsumed() *PlayerConsumedMessage {
+	if x != nil {
+		if x, ok := x.Msg.(*Packet_PlayerConsumed); ok {
+			return x.PlayerConsumed
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetHiscoreBoardRequest() *HiscoreBoardRequestMessage {
+	if x != nil {
+		if x, ok := x.Msg.(*Packet_HiscoreBoardRequest); ok {
+			return x.HiscoreBoardRequest
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetHiscoreBoard() *HiscoreBoardMessage {
+	if x != nil {
+		if x, ok := x.Msg.(*Packet_HiscoreBoard); ok {
+			return x.HiscoreBoard
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetHiscore() *HiscoreMessage {
+	if x != nil {
+		if x, ok := x.Msg.(*Packet_Hiscore); ok {
+			return x.Hiscore
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetFinishedBrowsingHiscores() *FinishedBrowsingHiscoresMessage {
+	if x != nil {
+		if x, ok := x.Msg.(*Packet_FinishedBrowsingHiscores); ok {
+			return x.FinishedBrowsingHiscores
+		}
+	}
+	return nil
+}
+
+func (x *Packet) GetSearchHiscore() *SearchHiscoreMessage {
+	if x != nil {
+		if x, ok := x.Msg.(*Packet_SearchHiscore); ok {
+			return x.SearchHiscore
+		}
+	}
+	return nil
+}
+
 type isPacket_Msg interface {
 	isPacket_Msg()
 }
@@ -601,6 +1057,38 @@ type Packet_PlayerDirection struct {
 	PlayerDirection *PlayerDirectionMessage `protobuf:"bytes,9,opt,name=player_direction,json=playerDirection,proto3,oneof"`
 }
 
+type Packet_Spore struct {
+	Spore *SporeMessage `protobuf:"bytes,10,opt,name=spore,proto3,oneof"`
+}
+
+type Packet_SporeConsumed struct {
+	SporeConsumed *SporeConsumedMessage `protobuf:"bytes,11,opt,name=spore_consumed,json=sporeConsumed,proto3,oneof"`
+}
+
+type Packet_PlayerConsumed struct {
+	PlayerConsumed *PlayerConsumedMessage `protobuf:"bytes,13,opt,name=player_consumed,json=playerConsumed,proto3,oneof"`
+}
+
+type Packet_HiscoreBoardRequest struct {
+	HiscoreBoardRequest *HiscoreBoardRequestMessage `protobuf:"bytes,14,opt,name=hiscore_board_request,json=hiscoreBoardRequest,proto3,oneof"`
+}
+
+type Packet_HiscoreBoard struct {
+	HiscoreBoard *HiscoreBoardMessage `protobuf:"bytes,16,opt,name=hiscore_board,json=hiscoreBoard,proto3,oneof"`
+}
+
+type Packet_Hiscore struct {
+	Hiscore *HiscoreMessage `protobuf:"bytes,15,opt,name=hiscore,proto3,oneof"`
+}
+
+type Packet_FinishedBrowsingHiscores struct {
+	FinishedBrowsingHiscores *FinishedBrowsingHiscoresMessage `protobuf:"bytes,17,opt,name=finished_browsing_hiscores,json=finishedBrowsingHiscores,proto3,oneof"`
+}
+
+type Packet_SearchHiscore struct {
+	SearchHiscore *SearchHiscoreMessage `protobuf:"bytes,18,opt,name=search_hiscore,json=searchHiscore,proto3,oneof"`
+}
+
 func (*Packet_Chat) isPacket_Msg() {}
 
 func (*Packet_Id) isPacket_Msg() {}
@@ -616,6 +1104,22 @@ func (*Packet_DenyResponse) isPacket_Msg() {}
 func (*Packet_Player) isPacket_Msg() {}
 
 func (*Packet_PlayerDirection) isPacket_Msg() {}
+
+func (*Packet_Spore) isPacket_Msg() {}
+
+func (*Packet_SporeConsumed) isPacket_Msg() {}
+
+func (*Packet_PlayerConsumed) isPacket_Msg() {}
+
+func (*Packet_HiscoreBoardRequest) isPacket_Msg() {}
+
+func (*Packet_HiscoreBoard) isPacket_Msg() {}
+
+func (*Packet_Hiscore) isPacket_Msg() {}
+
+func (*Packet_FinishedBrowsingHiscores) isPacket_Msg() {}
+
+func (*Packet_SearchHiscore) isPacket_Msg() {}
 
 var File_packets_proto protoreflect.FileDescriptor
 
@@ -644,7 +1148,26 @@ const file_packets_proto_rawDesc = "" +
 	"\tdirection\x18\x06 \x01(\x01R\tdirection\x12\x14\n" +
 	"\x05speed\x18\a \x01(\x01R\x05speed\"6\n" +
 	"\x16PlayerDirectionMessage\x12\x1c\n" +
-	"\tdirection\x18\x01 \x01(\x01R\tdirection\"\x8e\x04\n" +
+	"\tdirection\x18\x01 \x01(\x01R\tdirection\"R\n" +
+	"\fSporeMessage\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x04R\x02id\x12\f\n" +
+	"\x01x\x18\x02 \x01(\x01R\x01x\x12\f\n" +
+	"\x01y\x18\x03 \x01(\x01R\x01y\x12\x16\n" +
+	"\x06radius\x18\x04 \x01(\x01R\x06radius\"1\n" +
+	"\x14SporeConsumedMessage\x12\x19\n" +
+	"\bspore_id\x18\x01 \x01(\x04R\asporeId\"4\n" +
+	"\x15PlayerConsumedMessage\x12\x1b\n" +
+	"\tplayer_id\x18\x01 \x01(\x04R\bplayerId\"\x1c\n" +
+	"\x1aHiscoreBoardRequestMessage\"N\n" +
+	"\x0eHiscoreMessage\x12\x12\n" +
+	"\x04rank\x18\x01 \x01(\x04R\x04rank\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
+	"\x05score\x18\x03 \x01(\x04R\x05score\"J\n" +
+	"\x13HiscoreBoardMessage\x123\n" +
+	"\bhiscores\x18\x01 \x03(\v2\x17.packets.HiscoreMessageR\bhiscores\"!\n" +
+	"\x1fFinishedBrowsingHiscoresMessage\"*\n" +
+	"\x14SearchHiscoreMessage\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\"\xd7\b\n" +
 	"\x06Packet\x12\x1b\n" +
 	"\tsender_id\x18\x01 \x01(\x04R\bsenderId\x12*\n" +
 	"\x04chat\x18\x02 \x01(\v2\x14.packets.ChatMessageH\x00R\x04chat\x12$\n" +
@@ -655,7 +1178,16 @@ const file_packets_proto_rawDesc = "" +
 	"okResponse\x12C\n" +
 	"\rdeny_response\x18\a \x01(\v2\x1c.packets.DenyResponseMessageH\x00R\fdenyResponse\x120\n" +
 	"\x06player\x18\b \x01(\v2\x16.packets.PlayerMessageH\x00R\x06player\x12L\n" +
-	"\x10player_direction\x18\t \x01(\v2\x1f.packets.PlayerDirectionMessageH\x00R\x0fplayerDirectionB\x05\n" +
+	"\x10player_direction\x18\t \x01(\v2\x1f.packets.PlayerDirectionMessageH\x00R\x0fplayerDirection\x12-\n" +
+	"\x05spore\x18\n" +
+	" \x01(\v2\x15.packets.SporeMessageH\x00R\x05spore\x12F\n" +
+	"\x0espore_consumed\x18\v \x01(\v2\x1d.packets.SporeConsumedMessageH\x00R\rsporeConsumed\x12I\n" +
+	"\x0fplayer_consumed\x18\r \x01(\v2\x1e.packets.PlayerConsumedMessageH\x00R\x0eplayerConsumed\x12Y\n" +
+	"\x15hiscore_board_request\x18\x0e \x01(\v2#.packets.HiscoreBoardRequestMessageH\x00R\x13hiscoreBoardRequest\x12C\n" +
+	"\rhiscore_board\x18\x10 \x01(\v2\x1c.packets.HiscoreBoardMessageH\x00R\fhiscoreBoard\x123\n" +
+	"\ahiscore\x18\x0f \x01(\v2\x17.packets.HiscoreMessageH\x00R\ahiscore\x12h\n" +
+	"\x1afinished_browsing_hiscores\x18\x11 \x01(\v2(.packets.FinishedBrowsingHiscoresMessageH\x00R\x18finishedBrowsingHiscores\x12F\n" +
+	"\x0esearch_hiscore\x18\x12 \x01(\v2\x1d.packets.SearchHiscoreMessageH\x00R\rsearchHiscoreB\x05\n" +
 	"\x03msgB\rZ\vpkg/packetsb\x06proto3"
 
 var (
@@ -670,32 +1202,49 @@ func file_packets_proto_rawDescGZIP() []byte {
 	return file_packets_proto_rawDescData
 }
 
-var file_packets_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_packets_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
 var file_packets_proto_goTypes = []any{
-	(*ChatMessage)(nil),            // 0: packets.ChatMessage
-	(*IdMessage)(nil),              // 1: packets.IdMessage
-	(*LoginMessage)(nil),           // 2: packets.LoginMessage
-	(*RegisterRequestMessage)(nil), // 3: packets.RegisterRequestMessage
-	(*OkResponseMessage)(nil),      // 4: packets.OkResponseMessage
-	(*DenyResponseMessage)(nil),    // 5: packets.DenyResponseMessage
-	(*PlayerMessage)(nil),          // 6: packets.PlayerMessage
-	(*PlayerDirectionMessage)(nil), // 7: packets.PlayerDirectionMessage
-	(*Packet)(nil),                 // 8: packets.Packet
+	(*ChatMessage)(nil),                     // 0: packets.ChatMessage
+	(*IdMessage)(nil),                       // 1: packets.IdMessage
+	(*LoginMessage)(nil),                    // 2: packets.LoginMessage
+	(*RegisterRequestMessage)(nil),          // 3: packets.RegisterRequestMessage
+	(*OkResponseMessage)(nil),               // 4: packets.OkResponseMessage
+	(*DenyResponseMessage)(nil),             // 5: packets.DenyResponseMessage
+	(*PlayerMessage)(nil),                   // 6: packets.PlayerMessage
+	(*PlayerDirectionMessage)(nil),          // 7: packets.PlayerDirectionMessage
+	(*SporeMessage)(nil),                    // 8: packets.SporeMessage
+	(*SporeConsumedMessage)(nil),            // 9: packets.SporeConsumedMessage
+	(*PlayerConsumedMessage)(nil),           // 10: packets.PlayerConsumedMessage
+	(*HiscoreBoardRequestMessage)(nil),      // 11: packets.HiscoreBoardRequestMessage
+	(*HiscoreMessage)(nil),                  // 12: packets.HiscoreMessage
+	(*HiscoreBoardMessage)(nil),             // 13: packets.HiscoreBoardMessage
+	(*FinishedBrowsingHiscoresMessage)(nil), // 14: packets.FinishedBrowsingHiscoresMessage
+	(*SearchHiscoreMessage)(nil),            // 15: packets.SearchHiscoreMessage
+	(*Packet)(nil),                          // 16: packets.Packet
 }
 var file_packets_proto_depIdxs = []int32{
-	0, // 0: packets.Packet.chat:type_name -> packets.ChatMessage
-	1, // 1: packets.Packet.id:type_name -> packets.IdMessage
-	2, // 2: packets.Packet.login_request:type_name -> packets.LoginMessage
-	3, // 3: packets.Packet.register_request:type_name -> packets.RegisterRequestMessage
-	4, // 4: packets.Packet.ok_response:type_name -> packets.OkResponseMessage
-	5, // 5: packets.Packet.deny_response:type_name -> packets.DenyResponseMessage
-	6, // 6: packets.Packet.player:type_name -> packets.PlayerMessage
-	7, // 7: packets.Packet.player_direction:type_name -> packets.PlayerDirectionMessage
-	8, // [8:8] is the sub-list for method output_type
-	8, // [8:8] is the sub-list for method input_type
-	8, // [8:8] is the sub-list for extension type_name
-	8, // [8:8] is the sub-list for extension extendee
-	0, // [0:8] is the sub-list for field type_name
+	12, // 0: packets.HiscoreBoardMessage.hiscores:type_name -> packets.HiscoreMessage
+	0,  // 1: packets.Packet.chat:type_name -> packets.ChatMessage
+	1,  // 2: packets.Packet.id:type_name -> packets.IdMessage
+	2,  // 3: packets.Packet.login_request:type_name -> packets.LoginMessage
+	3,  // 4: packets.Packet.register_request:type_name -> packets.RegisterRequestMessage
+	4,  // 5: packets.Packet.ok_response:type_name -> packets.OkResponseMessage
+	5,  // 6: packets.Packet.deny_response:type_name -> packets.DenyResponseMessage
+	6,  // 7: packets.Packet.player:type_name -> packets.PlayerMessage
+	7,  // 8: packets.Packet.player_direction:type_name -> packets.PlayerDirectionMessage
+	8,  // 9: packets.Packet.spore:type_name -> packets.SporeMessage
+	9,  // 10: packets.Packet.spore_consumed:type_name -> packets.SporeConsumedMessage
+	10, // 11: packets.Packet.player_consumed:type_name -> packets.PlayerConsumedMessage
+	11, // 12: packets.Packet.hiscore_board_request:type_name -> packets.HiscoreBoardRequestMessage
+	13, // 13: packets.Packet.hiscore_board:type_name -> packets.HiscoreBoardMessage
+	12, // 14: packets.Packet.hiscore:type_name -> packets.HiscoreMessage
+	14, // 15: packets.Packet.finished_browsing_hiscores:type_name -> packets.FinishedBrowsingHiscoresMessage
+	15, // 16: packets.Packet.search_hiscore:type_name -> packets.SearchHiscoreMessage
+	17, // [17:17] is the sub-list for method output_type
+	17, // [17:17] is the sub-list for method input_type
+	17, // [17:17] is the sub-list for extension type_name
+	17, // [17:17] is the sub-list for extension extendee
+	0,  // [0:17] is the sub-list for field type_name
 }
 
 func init() { file_packets_proto_init() }
@@ -703,7 +1252,7 @@ func file_packets_proto_init() {
 	if File_packets_proto != nil {
 		return
 	}
-	file_packets_proto_msgTypes[8].OneofWrappers = []any{
+	file_packets_proto_msgTypes[16].OneofWrappers = []any{
 		(*Packet_Chat)(nil),
 		(*Packet_Id)(nil),
 		(*Packet_LoginRequest)(nil),
@@ -712,6 +1261,14 @@ func file_packets_proto_init() {
 		(*Packet_DenyResponse)(nil),
 		(*Packet_Player)(nil),
 		(*Packet_PlayerDirection)(nil),
+		(*Packet_Spore)(nil),
+		(*Packet_SporeConsumed)(nil),
+		(*Packet_PlayerConsumed)(nil),
+		(*Packet_HiscoreBoardRequest)(nil),
+		(*Packet_HiscoreBoard)(nil),
+		(*Packet_Hiscore)(nil),
+		(*Packet_FinishedBrowsingHiscores)(nil),
+		(*Packet_SearchHiscore)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -719,7 +1276,7 @@ func file_packets_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_packets_proto_rawDesc), len(file_packets_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   17,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

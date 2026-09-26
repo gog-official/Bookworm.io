@@ -47,3 +47,21 @@ func NewPlayer(id uint64, player *objects.Player) Msg {
 		},
 	}
 }
+func NewSpore(id uint64, spore *objects.Spore) Msg{
+	return &Packet_Spore{
+		Spore: &SporeMessage{
+			Id: id,
+			X: spore.X,
+			Y: spore.Y,
+			Radius: spore.Radius,
+		},
+	}
+}
+
+func NewHiscoreBoard(hiscores []*HiscoreMessage) Msg{
+	return &Packet_HiscoreBoard{
+		HiscoreBoard: &HiscoreBoardMessage{
+			Hiscores: hiscores,
+		},
+	}
+}
