@@ -1,7 +1,7 @@
 extends Node
 
 const packets := preload("res://packets.gd")
-var socker := WebSocketPeer.new()
+var socket := WebSocketPeer.new()
 var last_state := WebSocketPeer.STATE_CLOSED
 
 signal connected_to_server()
