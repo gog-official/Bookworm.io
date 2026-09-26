@@ -74,13 +74,37 @@ func (c *WebSocketClient) PassToPeer(message packets.Msg, peerId uint64) {
 func (c *WebSocketClient) Broadcast(message packets.Msg) {
 	c.hub.BroadcastChan <- &packets.Packet{SenderId: c.id, Msg: message}
 }
-func (c *WebSocketClient) ReadPump() {
-	defer func() {
-		c.logger.Println("closing read pump")
-		c.Close("read pump closed")
-	}()
-}
 
+func (c *WebSocketClient) ReadPump() {
+    defer func() {
+        c.logger.Println("Closing read pump")
+        c.Close("read pump closed")
+    }()
+
+    for {
+        _, data, err := c.conn.ReadMessage()
+        if err != nil {
+            if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+                c.logger.Printf("error: %v", err)
+            }
+            break
+        }
+
+        packet := &packets.Packet{}
+        err = proto.Unmarshal(data, packet)
+        if err != nil {
+            c.logger.Printf("error unmarshalling data: %v", err)
+            continue
+        }
+
+        // To allow the client to lazily not set the sender ID, we'll assume they want to send it as themselves
+        if packet.SenderId == 0 {
+            packet.SenderId = c.id
+        }
+
+        c.ProcessMessage(packet.SenderId, packet.Msg)
+    }
+}
 func (c *WebSocketClient) Close(reason string) {
 	c.logger.Printf("Closing client connection because: %s", reason)
 
@@ -89,60 +113,40 @@ func (c *WebSocketClient) Close(reason string) {
 	if _, closed := <-c.sendChan; !closed {
 		close(c.sendChan)
 	}
-	for {
-		_, data, err := c.conn.ReadMessage()
-		if err != nil {
-			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
-				c.logger.Printf("error: %v", err)
-			}
-			break
-		}
-
-		packet := &packets.Packet{}
-		err = proto.Unmarshal(data, packet)
-		if err != nil {
-			c.logger.Printf("error unmarshalling data: %v", err)
-			continue
-		}
-
-		// To allow the client to lazily not set the sender ID, we'll assume they want to send it as themselves
-		if packet.SenderId == 0 {
-			packet.SenderId = c.id
-		}
-		c.SetState(nil)
-		c.ProcessMessage(packet.SenderId, packet.Msg)
-	}
 }
 func (c *WebSocketClient) WritePump() {
-	defer func() {
-		c.logger.Println("Closing write pump")
-		c.Close("Write pump closed")
-	}()
+    defer func() {
+        c.logger.Println("Closing write pump")
+        c.Close("write pump closed")
+    }()
 
-	for packet := range c.sendChan {
-		writer, err := c.conn.NextWriter(websocket.BinaryMessage)
-		if err != nil {
-			c.logger.Printf("error getting writer for %T packet, closing client: %v", packet.Msg, err)
-			return
-		}
-		data, err := proto.Marshal(packet)
-		if err != nil {
-			c.logger.Printf("error ,arshaling %T packet, dropping: %v", packet.Msg, err)
-			continue
-		}
-		_, writeErr := writer.Write(data)
-		if writeErr != nil {
-			c.logger.Printf("error writing %T packet: %v", packet.Msg, writeErr)
-			continue
-		}
-		writer.Write([]byte{'\n'})
+    for packet := range c.sendChan {
+        writer, err := c.conn.NextWriter(websocket.BinaryMessage)
+        if err != nil {
+            c.logger.Printf("error getting writer for %T packet, closing client: %v", packet.Msg, err)
+            return
+        }
 
-		if closeErr := writer.Close(); closeErr != nil {
-			c.logger.Printf("error closing writer, dropping %T packet:%v", packet.Msg, closeErr)
-			continue
-		}
-	}
+        data, err := proto.Marshal(packet)
+        if err != nil {
+            c.logger.Printf("error marshalling %T packet, dropping: %v", packet.Msg, err)
+            continue
+        }
 
+        _, writeErr := writer.Write(data)
+
+        if writeErr != nil {
+            c.logger.Printf("error writing %T packet: %v", packet.Msg, err)
+            continue
+        }
+
+        writer.Write([]byte{'\n'})
+
+        if closeErr := writer.Close(); closeErr != nil {
+            c.logger.Printf("error closing writer, dropping %T packet: %v", packet.Msg, err)
+            continue
+        }
+    }
 }
 func (c *WebSocketClient) SetState(state server.ClientStateHandler) {
 	prevStateName := "None"

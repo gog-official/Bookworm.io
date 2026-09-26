@@ -17,7 +17,7 @@ import (
 
 	_ "modernc.org/sqlite"
 )
-
+//go:embed db/config/schema.sql
 var schemaGenSql string
 const MaxSpores int = 1000
 
@@ -72,18 +72,20 @@ type ClientStateHandler interface {
 
 func NewHub() *Hub {
 	dbPool, err := sql.Open("sqlite", "db.sqlite")
-	
 	if err != nil {
 		log.Fatal(err)
 	}
 	return &Hub{
-		dbPool: dbPool,
+		Clients:        objects.NewSharedCollection[ClientInterfacer](),
+		BroadcastChan:  make(chan *packets.Packet),
+		RegisterChan:   make(chan ClientInterfacer),
+		UnregisterChan: make(chan ClientInterfacer),
+		dbPool:         dbPool,
 		SharedGameObjects: &SharedGameObjects{
 			Players: objects.NewSharedCollection[*objects.Player](),
 			Spores: objects.NewSharedCollection[*objects.Spore](),
 		},
 	}
-	
 }
 
 type DbTx struct {

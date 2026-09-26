@@ -88,6 +88,11 @@ func (g *InGame) HandleMessage(senderId uint64, message packets.Msg) {
 		g.handlePlayerConsumed(senderId, message)
 	case *packets.Packet_Spore:
 		g.handleSpore(senderId, message)
+		if senderId == g.client.Id() {
+			g.client.Broadcast(message)
+		} else {
+			g.client.SocketSendAs(message, senderId)
+		}
 	}
 }
 func (g *InGame) handlePlayer(senderId uint64, message *packets.Packet_Player) {
