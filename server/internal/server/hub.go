@@ -1,6 +1,5 @@
 package server
 
-
 import (
 	"log"
 	"net/http"
@@ -17,8 +16,10 @@ import (
 
 	_ "modernc.org/sqlite"
 )
+
 //go:embed db/config/schema.sql
 var schemaGenSql string
+
 const MaxSpores int = 1000
 
 type ClientInterfacer interface {
@@ -49,17 +50,16 @@ type ClientInterfacer interface {
 }
 type SharedGameObjects struct {
 	Players *objects.SharedCollection[*objects.Player]
-	Spores *objects.SharedCollection[*objects.Spore]
+	Spores  *objects.SharedCollection[*objects.Spore]
 }
 
 type Hub struct {
-	Clients        *objects.SharedCollection[ClientInterfacer]
-	BroadcastChan  chan *packets.Packet
-	RegisterChan   chan ClientInterfacer
-	UnregisterChan chan ClientInterfacer
-	dbPool         *sql.DB
+	Clients           *objects.SharedCollection[ClientInterfacer]
+	BroadcastChan     chan *packets.Packet
+	RegisterChan      chan ClientInterfacer
+	UnregisterChan    chan ClientInterfacer
+	dbPool            *sql.DB
 	SharedGameObjects *SharedGameObjects
-
 }
 
 type ClientStateHandler interface {
@@ -83,7 +83,7 @@ func NewHub() *Hub {
 		dbPool:         dbPool,
 		SharedGameObjects: &SharedGameObjects{
 			Players: objects.NewSharedCollection[*objects.Player](),
-			Spores: objects.NewSharedCollection[*objects.Spore](),
+			Spores:  objects.NewSharedCollection[*objects.Spore](),
 		},
 	}
 }
@@ -102,16 +102,19 @@ func (h *Hub) NewDbTx() *DbTx {
 
 func (h *Hub) Run() {
 	log.Println("Initializing database...")
-	
+
 	log.Println("Placing spores....")
-	for i:=0; i<MaxSpores; i++{
+	for i := 0; i < MaxSpores; i++ {
 		h.SharedGameObjects.Spores.Add(h.newSpore())
 	}
 	log.Println("Awating client registrations")
-	
+
 	if _, err := h.dbPool.ExecContext(context.Background(), schemaGenSql); err != nil {
 		log.Fatal(err)
 	}
+
+	go h.replenishSporesLoop(2 * time.Second)
+
 	for {
 		select {
 		case client := <-h.RegisterChan:
@@ -126,17 +129,17 @@ func (h *Hub) Run() {
 			})
 		}
 	}
-	go h.replenishSporesLoop(2 * time.Second)
+
 }
-func (h *Hub) newSpore() *objects.Spore{
+func (h *Hub) newSpore() *objects.Spore {
 	sporeRadius := max(rand.NormFloat64()*3+10, 5)
 	x, y := objects.SpawnCoords(sporeRadius, h.SharedGameObjects.Players, h.SharedGameObjects.Spores)
 	return &objects.Spore{
-		X: x, 
-		Y: y, 
+		X:      x,
+		Y:      y,
 		Radius: sporeRadius,
 	}
-	
+
 }
 
 func (h *Hub) Serve(getNewClient func(*Hub, http.ResponseWriter, *http.Request) (ClientInterfacer, error), writer http.ResponseWriter, request *http.Request) {
@@ -153,27 +156,27 @@ func (h *Hub) Serve(getNewClient func(*Hub, http.ResponseWriter, *http.Request) 
 	go client.ReadPump()
 }
 
-func (h *Hub) replenishSporesLoop(rate time.Duration){
+func (h *Hub) replenishSporesLoop(rate time.Duration) {
 	ticker := time.NewTicker(rate)
 	defer ticker.Stop()
-	
+
 	for range ticker.C {
 		sporesRemaining := h.SharedGameObjects.Spores.Len()
 		diff := MaxSpores - sporesRemaining
 
-		if diff > 0 {
+		if diff <= 0 {
 			continue
 		}
 
 		log.Printf("%d spores remain - going to replenish %d spores", sporesRemaining, diff)
 
-		for i := 0; i<min(diff, 10); i++{
+		for i := 0; i < min(diff, 10); i++ {
 			spore := h.newSpore()
 			sporeId := h.SharedGameObjects.Spores.Add(spore)
 
 			h.BroadcastChan <- &packets.Packet{
 				SenderId: 0,
-				Msg: packets.NewSpore(sporeId, spore),
+				Msg:      packets.NewSpore(sporeId, spore),
 			}
 
 			time.Sleep(50 * time.Millisecond)

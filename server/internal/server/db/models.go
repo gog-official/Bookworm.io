@@ -7,6 +7,7 @@ package db
 type Player struct {
 	ID        int64
 	UserID    int64
+	Color     int64
 	Name      string
 	BestScore int64
 }

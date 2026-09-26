@@ -107,7 +107,7 @@ func (c *WebSocketClient) ReadPump() {
 }
 func (c *WebSocketClient) Close(reason string) {
 	c.logger.Printf("Closing client connection because: %s", reason)
-
+	c.Broadcast(packets.NewDisconnect(reason))
 	c.hub.UnregisterChan <- c
 	c.conn.Close()
 	if _, closed := <-c.sendChan; !closed {

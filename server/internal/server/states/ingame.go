@@ -93,8 +93,21 @@ func (g *InGame) HandleMessage(senderId uint64, message packets.Msg) {
 		} else {
 			g.client.SocketSendAs(message, senderId)
 		}
+	case *packets.Packet_Disconnect:
+		g.handleDisconnect(senderId, message)
 	}
 }
+
+func (g *InGame) handleDisconnect(senderId uint64, message *packets.Packet_Disconnect){
+	if senderId == g.client.Id(){
+		g.client.Broadcast(message)
+		g.client.SetState(&Connected{})		
+	}else{
+		go g.client.SocketSendAs(message, senderId)
+	}
+}
+
+
 func (g *InGame) handlePlayer(senderId uint64, message *packets.Packet_Player) {
 	if senderId == g.client.Id() {
 		g.logger.Println("Received player message from our own client, ignoring")
@@ -102,6 +115,8 @@ func (g *InGame) handlePlayer(senderId uint64, message *packets.Packet_Player) {
 	}
 	g.client.SocketSendAs(message, senderId)
 }
+
+
 func (g *InGame) handleChat(senderId uint64, message *packets.Packet_Chat) {
 	if senderId == g.client.Id() {
 		g.client.Broadcast(message)
@@ -110,9 +125,11 @@ func (g *InGame) handleChat(senderId uint64, message *packets.Packet_Chat) {
 	}
 }
 
+
 func (g *InGame) handleSpore(senderId uint64, message *packets.Packet_Spore) {
 	g.client.SocketSendAs(message, senderId)
 }
+
 
 func (g *InGame) playerUpdateLoop(ctx context.Context) {
 	const delta float64 = 0.05
@@ -197,7 +214,7 @@ func (g *InGame) validatePlayerCloseToObject(objX, objY, objRadius, buffer float
 	thresholdDist := g.player.Radius + buffer + objRadius
 	thresholdDistSq := thresholdDist * thresholdDist
 
-	if realDistSq <= thresholdDistSq {
+	if realDistSq > thresholdDistSq {
 		return fmt.Errorf("player is too far from the object(distSq: %f, thresholdSq: %f)", realDistSq, thresholdDistSq)
 	}
 	return nil

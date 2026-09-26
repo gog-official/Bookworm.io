@@ -166,6 +166,7 @@ type RegisterRequestMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Username      string                 `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
 	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	Color         int32                  `protobuf:"varint,3,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -212,6 +213,13 @@ func (x *RegisterRequestMessage) GetPassword() string {
 		return x.Password
 	}
 	return ""
+}
+
+func (x *RegisterRequestMessage) GetColor() int32 {
+	if x != nil {
+		return x.Color
+	}
+	return 0
 }
 
 type OkResponseMessage struct {
@@ -303,6 +311,7 @@ type PlayerMessage struct {
 	Radius        float64                `protobuf:"fixed64,5,opt,name=radius,proto3" json:"radius,omitempty"`
 	Direction     float64                `protobuf:"fixed64,6,opt,name=direction,proto3" json:"direction,omitempty"`
 	Speed         float64                `protobuf:"fixed64,7,opt,name=speed,proto3" json:"speed,omitempty"`
+	Color         int32                  `protobuf:"varint,8,opt,name=color,proto3" json:"color,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -382,6 +391,13 @@ func (x *PlayerMessage) GetDirection() float64 {
 func (x *PlayerMessage) GetSpeed() float64 {
 	if x != nil {
 		return x.Speed
+	}
+	return 0
+}
+
+func (x *PlayerMessage) GetColor() int32 {
+	if x != nil {
+		return x.Color
 	}
 	return 0
 }
@@ -806,6 +822,50 @@ func (x *SearchHiscoreMessage) GetName() string {
 	return ""
 }
 
+type DisconnectMessage struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Reason        string                 `protobuf:"bytes,1,opt,name=reason,proto3" json:"reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DisconnectMessage) Reset() {
+	*x = DisconnectMessage{}
+	mi := &file_packets_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DisconnectMessage) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DisconnectMessage) ProtoMessage() {}
+
+func (x *DisconnectMessage) ProtoReflect() protoreflect.Message {
+	mi := &file_packets_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DisconnectMessage.ProtoReflect.Descriptor instead.
+func (*DisconnectMessage) Descriptor() ([]byte, []int) {
+	return file_packets_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *DisconnectMessage) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
 // the msg packet
 type Packet struct {
 	state    protoimpl.MessageState `protogen:"open.v1"`
@@ -828,6 +888,7 @@ type Packet struct {
 	//	*Packet_Hiscore
 	//	*Packet_FinishedBrowsingHiscores
 	//	*Packet_SearchHiscore
+	//	*Packet_Disconnect
 	Msg           isPacket_Msg `protobuf_oneof:"msg"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -835,7 +896,7 @@ type Packet struct {
 
 func (x *Packet) Reset() {
 	*x = Packet{}
-	mi := &file_packets_proto_msgTypes[16]
+	mi := &file_packets_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -847,7 +908,7 @@ func (x *Packet) String() string {
 func (*Packet) ProtoMessage() {}
 
 func (x *Packet) ProtoReflect() protoreflect.Message {
-	mi := &file_packets_proto_msgTypes[16]
+	mi := &file_packets_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -860,7 +921,7 @@ func (x *Packet) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Packet.ProtoReflect.Descriptor instead.
 func (*Packet) Descriptor() ([]byte, []int) {
-	return file_packets_proto_rawDescGZIP(), []int{16}
+	return file_packets_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *Packet) GetSenderId() uint64 {
@@ -1021,6 +1082,15 @@ func (x *Packet) GetSearchHiscore() *SearchHiscoreMessage {
 	return nil
 }
 
+func (x *Packet) GetDisconnect() *DisconnectMessage {
+	if x != nil {
+		if x, ok := x.Msg.(*Packet_Disconnect); ok {
+			return x.Disconnect
+		}
+	}
+	return nil
+}
+
 type isPacket_Msg interface {
 	isPacket_Msg()
 }
@@ -1089,6 +1159,10 @@ type Packet_SearchHiscore struct {
 	SearchHiscore *SearchHiscoreMessage `protobuf:"bytes,18,opt,name=search_hiscore,json=searchHiscore,proto3,oneof"`
 }
 
+type Packet_Disconnect struct {
+	Disconnect *DisconnectMessage `protobuf:"bytes,19,opt,name=disconnect,proto3,oneof"`
+}
+
 func (*Packet_Chat) isPacket_Msg() {}
 
 func (*Packet_Id) isPacket_Msg() {}
@@ -1121,6 +1195,8 @@ func (*Packet_FinishedBrowsingHiscores) isPacket_Msg() {}
 
 func (*Packet_SearchHiscore) isPacket_Msg() {}
 
+func (*Packet_Disconnect) isPacket_Msg() {}
+
 var File_packets_proto protoreflect.FileDescriptor
 
 const file_packets_proto_rawDesc = "" +
@@ -1132,13 +1208,14 @@ const file_packets_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\"F\n" +
 	"\fLoginMessage\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"P\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\"f\n" +
 	"\x16RegisterRequestMessage\x12\x1a\n" +
 	"\busername\x18\x01 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x02 \x01(\tR\bpassword\"\x13\n" +
+	"\bpassword\x18\x02 \x01(\tR\bpassword\x12\x14\n" +
+	"\x05color\x18\x03 \x01(\x05R\x05color\"\x13\n" +
 	"\x11OkResponseMessage\"-\n" +
 	"\x13DenyResponseMessage\x12\x16\n" +
-	"\x06reason\x18\x02 \x01(\tR\x06reason\"\x9b\x01\n" +
+	"\x06reason\x18\x02 \x01(\tR\x06reason\"\xb1\x01\n" +
 	"\rPlayerMessage\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x04R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\f\n" +
@@ -1146,7 +1223,8 @@ const file_packets_proto_rawDesc = "" +
 	"\x01y\x18\x04 \x01(\x01R\x01y\x12\x16\n" +
 	"\x06radius\x18\x05 \x01(\x01R\x06radius\x12\x1c\n" +
 	"\tdirection\x18\x06 \x01(\x01R\tdirection\x12\x14\n" +
-	"\x05speed\x18\a \x01(\x01R\x05speed\"6\n" +
+	"\x05speed\x18\a \x01(\x01R\x05speed\x12\x14\n" +
+	"\x05color\x18\b \x01(\x05R\x05color\"6\n" +
 	"\x16PlayerDirectionMessage\x12\x1c\n" +
 	"\tdirection\x18\x01 \x01(\x01R\tdirection\"R\n" +
 	"\fSporeMessage\x12\x0e\n" +
@@ -1167,7 +1245,9 @@ const file_packets_proto_rawDesc = "" +
 	"\bhiscores\x18\x01 \x03(\v2\x17.packets.HiscoreMessageR\bhiscores\"!\n" +
 	"\x1fFinishedBrowsingHiscoresMessage\"*\n" +
 	"\x14SearchHiscoreMessage\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\"\xd7\b\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\"+\n" +
+	"\x11DisconnectMessage\x12\x16\n" +
+	"\x06reason\x18\x01 \x01(\tR\x06reason\"\x95\t\n" +
 	"\x06Packet\x12\x1b\n" +
 	"\tsender_id\x18\x01 \x01(\x04R\bsenderId\x12*\n" +
 	"\x04chat\x18\x02 \x01(\v2\x14.packets.ChatMessageH\x00R\x04chat\x12$\n" +
@@ -1187,7 +1267,10 @@ const file_packets_proto_rawDesc = "" +
 	"\rhiscore_board\x18\x10 \x01(\v2\x1c.packets.HiscoreBoardMessageH\x00R\fhiscoreBoard\x123\n" +
 	"\ahiscore\x18\x0f \x01(\v2\x17.packets.HiscoreMessageH\x00R\ahiscore\x12h\n" +
 	"\x1afinished_browsing_hiscores\x18\x11 \x01(\v2(.packets.FinishedBrowsingHiscoresMessageH\x00R\x18finishedBrowsingHiscores\x12F\n" +
-	"\x0esearch_hiscore\x18\x12 \x01(\v2\x1d.packets.SearchHiscoreMessageH\x00R\rsearchHiscoreB\x05\n" +
+	"\x0esearch_hiscore\x18\x12 \x01(\v2\x1d.packets.SearchHiscoreMessageH\x00R\rsearchHiscore\x12<\n" +
+	"\n" +
+	"disconnect\x18\x13 \x01(\v2\x1a.packets.DisconnectMessageH\x00R\n" +
+	"disconnectB\x05\n" +
 	"\x03msgB\rZ\vpkg/packetsb\x06proto3"
 
 var (
@@ -1202,7 +1285,7 @@ func file_packets_proto_rawDescGZIP() []byte {
 	return file_packets_proto_rawDescData
 }
 
-var file_packets_proto_msgTypes = make([]protoimpl.MessageInfo, 17)
+var file_packets_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_packets_proto_goTypes = []any{
 	(*ChatMessage)(nil),                     // 0: packets.ChatMessage
 	(*IdMessage)(nil),                       // 1: packets.IdMessage
@@ -1220,7 +1303,8 @@ var file_packets_proto_goTypes = []any{
 	(*HiscoreBoardMessage)(nil),             // 13: packets.HiscoreBoardMessage
 	(*FinishedBrowsingHiscoresMessage)(nil), // 14: packets.FinishedBrowsingHiscoresMessage
 	(*SearchHiscoreMessage)(nil),            // 15: packets.SearchHiscoreMessage
-	(*Packet)(nil),                          // 16: packets.Packet
+	(*DisconnectMessage)(nil),               // 16: packets.DisconnectMessage
+	(*Packet)(nil),                          // 17: packets.Packet
 }
 var file_packets_proto_depIdxs = []int32{
 	12, // 0: packets.HiscoreBoardMessage.hiscores:type_name -> packets.HiscoreMessage
@@ -1240,11 +1324,12 @@ var file_packets_proto_depIdxs = []int32{
 	12, // 14: packets.Packet.hiscore:type_name -> packets.HiscoreMessage
 	14, // 15: packets.Packet.finished_browsing_hiscores:type_name -> packets.FinishedBrowsingHiscoresMessage
 	15, // 16: packets.Packet.search_hiscore:type_name -> packets.SearchHiscoreMessage
-	17, // [17:17] is the sub-list for method output_type
-	17, // [17:17] is the sub-list for method input_type
-	17, // [17:17] is the sub-list for extension type_name
-	17, // [17:17] is the sub-list for extension extendee
-	0,  // [0:17] is the sub-list for field type_name
+	16, // 17: packets.Packet.disconnect:type_name -> packets.DisconnectMessage
+	18, // [18:18] is the sub-list for method output_type
+	18, // [18:18] is the sub-list for method input_type
+	18, // [18:18] is the sub-list for extension type_name
+	18, // [18:18] is the sub-list for extension extendee
+	0,  // [0:18] is the sub-list for field type_name
 }
 
 func init() { file_packets_proto_init() }
@@ -1252,7 +1337,7 @@ func file_packets_proto_init() {
 	if File_packets_proto != nil {
 		return
 	}
-	file_packets_proto_msgTypes[16].OneofWrappers = []any{
+	file_packets_proto_msgTypes[17].OneofWrappers = []any{
 		(*Packet_Chat)(nil),
 		(*Packet_Id)(nil),
 		(*Packet_LoginRequest)(nil),
@@ -1269,6 +1354,7 @@ func file_packets_proto_init() {
 		(*Packet_Hiscore)(nil),
 		(*Packet_FinishedBrowsingHiscores)(nil),
 		(*Packet_SearchHiscore)(nil),
+		(*Packet_Disconnect)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1276,7 +1362,7 @@ func file_packets_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_packets_proto_rawDesc), len(file_packets_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   17,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
