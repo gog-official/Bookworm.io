@@ -13,13 +13,26 @@ var speed: float
 var is_player: bool
 
 var velocity: Vector2
-var radius: float
+var radius: float:
+	set(new_radius):
+		radius = new_radius
+		_collision_shape.set_radius(radius)
+		queue_redraw()
 
 @onready var _nameplate: Label = $Label
 @onready var _cam: Camera2D = $Camera2D
 @onready var _collision_shape: CircleShape2D = $CollisionShape2D.shape
 
-static func instantiate(actor_id: int, actor_name: String, x: float, y: float, radius: float, speed: float, is_player: bool) -> Actor:
+
+static func instantiate(
+	actor_id: int,
+	actor_name: String,
+	x: float,
+	y: float,
+	radius: float,
+	speed: float,
+	is_player: bool
+) -> Actor:
 	var actor := Scene.instantiate()
 	actor.actor_id = actor_id
 	actor.actor_name = actor_name
@@ -31,6 +44,7 @@ static func instantiate(actor_id: int, actor_name: String, x: float, y: float, r
 
 	return actor
 
+
 # Called when t he node enters the scene tree for the first time.
 func _ready() -> void:
 	position.x = start_x
@@ -40,7 +54,7 @@ func _ready() -> void:
 
 	_collision_shape.radius = radius
 	_nameplate.text = actor_name
-	
+
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta: float) -> void:
@@ -59,8 +73,10 @@ func _physics_process(delta: float) -> void:
 		player_direction_message.set_direction(velocity.angle())
 		WsClient.send(packet)
 
+
 func _draw() -> void:
 	draw_circle(Vector2.ZERO, _collision_shape.radius, Color.DARK_ORCHID)
+
 
 func _input(event):
 	if is_player and event is InputEventMouseButton and event.is_pressed():
