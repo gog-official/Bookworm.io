@@ -7,8 +7,9 @@ const Spore := preload("res://objects/spores/spore.gd")
 var _players: Dictionary[int, Actor]
 var _spores: Dictionary[int, Spore]
 
-@onready var _line_edit: LineEdit = $UI/LineEdit
-@onready var _log: Log = $UI/Log
+@onready var _line_edit: LineEdit = $UI/VBoxContainer/LineEdit
+@onready var _log: Log = $UI/VBoxContainer/Log
+@onready var _hiscores: Hiscores = $UI/VBoxContainer/Hiscores
 @onready var _world: Node2D = $World
 
 
@@ -56,6 +57,7 @@ func _radius_to_mass(r: float) -> float:
 
 func _set_actor_mass(actor: Actor, new_mass: float) -> void:
 	actor.radius = sqrt(new_mass / PI)
+	_hiscores.set_hiscore(actor.actor_name, roundi(new_mass))
 
 
 func _handle_chat_msg(sender_id: int, chat_msg: packets.ChatMessage) -> void:
@@ -117,6 +119,7 @@ func _add_actor(
 ) -> void:
 	var actor := Actor.instantiate(actor_id, actor_name, x, y, radius, speed, is_player)
 	_world.add_child(actor)
+	_set_actor_mass(actor, _radius_to_mass(radius))
 	_players[actor_id] = actor
 
 	if is_player:
@@ -133,6 +136,7 @@ func _update_actor(
 	is_player: bool
 ) -> void:
 	var actor := _players[actor_id]
+	_set_actor_mass(actor, _radius_to_mass(radius))
 	actor.radius = radius
 
 	if actor.position.distance_squared_to(Vector2(x, y)) > 100:
@@ -162,11 +166,11 @@ func _collide_actor(actor: Actor) -> void:
 func _consume_actor(actor: Actor) -> void:
 	var player = _players[GameManager.client_id]
 	var player_mass := _radius_to_mass(player.radius)
-	var actor_mass := _radius_to_mass(actor.rad)
+	var actor_mass := _radius_to_mass(actor.radius)
 	_set_actor_mass(player, player_mass + actor_mass)
 	var packet := packets.Packet.new()
 	var spore_consumed_msg := packet.new_player_consumed()
-	spore_consumed_msg.set_spore_id(actor.spore_id)
+	spore_consumed_msg.set_spore_id(actor.actor_id)
 	WsClient.send(packet)
 	_remove_actor(actor)
 
@@ -174,6 +178,7 @@ func _consume_actor(actor: Actor) -> void:
 func _remove_actor(actor: Actor) -> void:
 	_players.erase(actor.actor_id)
 	actor.queue_free()
+	_hiscores.remove_hiscore(actor.actor_name)
 
 
 func _consume_spore(spore: Spore) -> void:

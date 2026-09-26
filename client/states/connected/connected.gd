@@ -9,6 +9,8 @@ var _action_on_ok_received: Callable
 @onready var _login_button: Button = $UI/VBoxContainer/HBoxContainer/LoginButton
 @onready var _register_button: Button = $UI/VBoxContainer/HBoxContainer/RegisterButton
 @onready var _log: Log = $UI/VBoxContainer/Log
+@onready var _hiscores_button: Button = $UI/VBoxContainer/HBoxContainer/HiscoresButton
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
@@ -16,6 +18,12 @@ func _ready() -> void:
 	WsClient.connection_closed.connect(_on_ws_connection_closed)
 	_login_button.pressed.connect(_on_login_button_pressed)
 	_register_button.pressed.connect(_on_register_button_pressed)
+	_hiscores_button.pressed.connect(_on_hs_button_pressed)
+
+
+func _on_hs_button_pressed() -> void:
+	GameManager.set_state(GameManager.State.BROWSING_HISCORES)
+
 
 func _on_ws_packet_received(packet: packets.Packet) -> void:
 	var sender_id := packet.get_sender_id()
@@ -25,8 +33,10 @@ func _on_ws_packet_received(packet: packets.Packet) -> void:
 	elif packet.has_ok_response():
 		_action_on_ok_received.call()
 
+
 func _on_ws_connection_closed() -> void:
 	pass
+
 
 func _on_login_button_pressed() -> void:
 	var packet := packets.Packet.new()
@@ -36,6 +46,7 @@ func _on_login_button_pressed() -> void:
 	WsClient.send(packet)
 	_action_on_ok_received = func(): GameManager.set_state(GameManager.State.INGAME)
 
+
 func _on_register_button_pressed() -> void:
 	var packet := packets.Packet.new()
 	var register_request_message := packet.new_register_request()
@@ -43,6 +54,7 @@ func _on_register_button_pressed() -> void:
 	register_request_message.set_password(_password_field.text)
 	WsClient.send(packet)
 	_action_on_ok_received = func(): _log.success("Registration successful")
+
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:

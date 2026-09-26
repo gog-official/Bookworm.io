@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cvxa36bcx5dbj" path="res://states/ingame/ingame.gd" id="1_0uskn"]
 [ext_resource type="Script" uid="uid://j22s314pk4mi" path="res://classes/log/log.gd" id="1_b7vyf"]
+[ext_resource type="PackedScene" uid="uid://djsifm44fqoay" path="res://classes/highscores/hiscores.tscn" id="2_wuwgw"]
 [ext_resource type="Texture2D" uid="uid://blnuxwawwgxit" path="res://resources/floor.svg" id="3_q22go"]
 
 [node name="Ingame" type="Node" unique_id=295665299]
@@ -9,19 +10,26 @@ script = ExtResource("1_0uskn")
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=2065903780]
 
-[node name="Log" type="RichTextLabel" parent="UI" unique_id=276169430]
-offset_left = 19.0
-offset_top = 433.0
-offset_right = 401.0
-offset_bottom = 591.0
+[node name="VBoxContainer" type="VBoxContainer" parent="UI" unique_id=1911082508]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LineEdit" type="LineEdit" parent="UI/VBoxContainer" unique_id=28355396]
+layout_mode = 2
+
+[node name="Hiscores" parent="UI/VBoxContainer" unique_id=431446689 instance=ExtResource("2_wuwgw")]
+custom_minimum_size = Vector2(200, 150)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 10
+
+[node name="Log" type="RichTextLabel" parent="UI/VBoxContainer" unique_id=276169430]
+layout_mode = 2
 script = ExtResource("1_b7vyf")
 metadata/_custom_type_script = "uid://j22s314pk4mi"
-
-[node name="LineEdit" type="LineEdit" parent="UI" unique_id=28355396]
-offset_left = 20.0
-offset_top = 593.0
-offset_right = 399.0
-offset_bottom = 624.0
 
 [node name="World" type="Node2D" parent="." unique_id=295413523]
 

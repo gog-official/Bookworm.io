@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://djsifm44fqoay"]
 
+[ext_resource type="Script" uid="uid://bfeli6j1k5nk7" path="res://classes/highscores/hiscores.gd" id="1_h2f07"]
+
 [node name="Hiscores" type="ScrollContainer" unique_id=431446689]
 anchors_preset = 15
 anchor_right = 1.0
@@ -7,6 +9,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_vertical = 2
+script = ExtResource("1_h2f07")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1020699978]
 layout_mode = 2
