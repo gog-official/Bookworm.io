@@ -62,3 +62,13 @@ func (s *SharedCollection[T]) Len() int{
 	defer s.mapMux.Unlock()
 	return len(s.objectsMap)
 }
+
+func (s *SharedCollection[T]) Snapshot() map[uint64]T {
+	s.mapMux.Lock()
+	defer s.mapMux.Unlock()
+	out := make(map[uint64]T, len(s.objectsMap))
+	for id, obj := range s.objectsMap {
+		out[id] = obj
+	}
+	return out
+}

@@ -10,6 +10,7 @@ import (
 	"server/internal/server/db"
 	"server/internal/server/objects"
 	"server/pkg/packets"
+	"sync"
 	"time"
 )
 
@@ -18,7 +19,14 @@ type InGame struct {
 	player                 *objects.Player
 	logger                 *log.Logger
 	cancelPlayerUpdateLoop context.CancelFunc
+	// OnExit now also runs from the websocket teardown path, so it has to be safe to
+	// reach more than once.
+	exitOnce sync.Once
 }
+
+// How long a freshly spawned snake is immune to death reports. Matches the client's
+// own spawn protection so neither side decides a collision the other one ignores.
+const SpawnGrace = 1500 * time.Millisecond
 
 func (g *InGame) Name() string {
 	return "InGame"
@@ -26,7 +34,7 @@ func (g *InGame) Name() string {
 
 func (g *InGame) SetClient(client server.ClientInterfacer) {
 	g.client = client
-	loggingPrefix := fmt.Sprintf("Client %d [%s]", client.Id(), g.Name())
+	loggingPrefix := fmt.Sprintf("Client %d [%s]: ", client.Id(), g.Name())
 	g.logger = log.New(log.Writer(), loggingPrefix, log.LstdFlags)
 }
 
@@ -34,8 +42,9 @@ func (g *InGame) OnEnter() {
 	g.logger.Printf("Adding player %s to the shared collection", g.player.Name)
 	go g.client.SharedGameObjects().Players.Add(g.player, g.client.Id())
 
-	g.player.Speed = 150.0
+	g.player.Speed = 200.0
 	g.player.Radius = 20.0
+	g.player.SpawnedAt = time.Now()
 	g.player.X, g.player.Y = objects.SpawnCoords(g.player.Radius, g.client.SharedGameObjects().Players, nil)
 	g.client.SocketSend(packets.NewPlayer(g.client.Id(), g.player))
 	go func() {
@@ -169,7 +178,7 @@ func (g *InGame) handleSporeConsumed(senderId uint64, message *packets.Packet_Sp
 		return
 	}
 
-	err = g.validatePlayerCloseToObject(spore.X, spore.Y, spore.Radius, 10)
+	err = g.validatePlayerCloseToObject(spore.X, spore.Y, spore.Radius, 70)
 	if err != nil {
 		g.logger.Println(errMsg + err.Error())
 		return
@@ -184,6 +193,15 @@ func (g *InGame) handleSporeConsumed(senderId uint64, message *packets.Packet_Sp
 	g.player.Radius = g.nextRadius(sporeMass)
 
 	go g.client.SharedGameObjects().Spores.Remove(sporeId)
+	newSporeRadius := max(rand.NormFloat64()*3+10, 5)
+	newX, newY := objects.SpawnNear(g.player.X, g.player.Y, 900)
+	newSpore := &objects.Spore{
+		X:      newX,
+		Y:      newY,
+		Radius: newSporeRadius,
+	}
+	newSporeId := g.client.SharedGameObjects().Spores.Add(newSpore)
+	g.client.SocketSend(packets.NewSpore(newSporeId, newSpore))
 	g.client.Broadcast(message)
 	go g.syncPlayerBestScore()
 }
@@ -231,47 +249,69 @@ func (g *InGame) nextRadius(massDiff float64) float64 {
 	return massToRad(newMass)
 }
 
+// Slither.io has no size rule and the head is the lethal part: a snake dies by
+// putting its own head into somebody, no matter how much bigger it is. The reporter
+// is the client that ran the check, and the named player is the victim, so the
+// victim is usually the reporter themselves.
+//
+// Self-reports are safe to trust even though the geometry is client-side, because
+// the only thing a client can gain by lying about its own death is its own death.
+// The head-to-body geometry is worked out on the client against the body it drew.
 func (g *InGame) handlePlayerConsumed(senderId uint64, message *packets.Packet_PlayerConsumed) {
+	victimId := message.PlayerConsumed.PlayerId
+
 	if senderId != g.client.Id() {
 		g.client.SocketSendAs(message, senderId)
 
-		if message.PlayerConsumed.PlayerId == g.client.Id() {
-			log.Println("player was consumed, respawning")
-			g.client.SetState(&InGame{
-				player: &objects.Player{
-					Name: g.player.Name,
-				},
-			})
+		if victimId == g.client.Id() {
+			g.logger.Println("player was consumed, dropping books and respawning")
+			g.dropAllMass()
+			g.respawnPlayer()
 		}
-
 		return
 	}
-	errMsg := "could not verify player consumtion:"
-	otherId := message.PlayerConsumed.PlayerId
-	other, err := g.getOtherPlayer(otherId)
+
+	if time.Since(g.player.SpawnedAt) < SpawnGrace {
+		return
+	}
+
+	if victimId == g.client.Id() {
+		// We ran our own head into them. Tell everyone so our actor is removed and our
+		// remains show up, then take the mass hit and come back.
+		g.dropAllMass()
+		g.client.Broadcast(message)
+		g.respawnPlayer()
+		return
+	}
+
+	victim, err := g.getOtherPlayer(victimId)
 	if err != nil {
-		g.logger.Println(errMsg + err.Error())
+		// Already dead and gone from the collection. A duplicate report arriving late
+		// must not kill a replacement snake, so stale reports are simply dropped.
+		return
+	}
+	if time.Since(victim.SpawnedAt) < SpawnGrace {
 		return
 	}
 
-	ourMass := radToMass(g.player.Radius)
-	otherMass := radToMass(other.Radius)
-	if ourMass <= otherMass*1.5 {
-		g.logger.Printf(errMsg+"player not massive enough to consume the other player(our rad: %f, other rad: %f)", g.player.Radius, other.Radius)
-		return
-	}
-
-	err = g.validatePlayerCloseToObject(other.X, other.Y, other.Radius, 10)
-	if err != nil {
-		g.logger.Println(errMsg + err.Error())
-		return
-	}
-
-	g.player.Radius = g.nextRadius(otherMass)
-	go g.client.SharedGameObjects().Players.Remove(otherId)
+	// Their head was inside our body, so they are the ones who die. We gain nothing:
+	// like slither, the mass goes on the ground as orbs that anyone at all may scoop
+	// up, and the victim drops it when it hears the broadcast.
 	g.client.Broadcast(message)
+}
 
-	go g.syncPlayerBestScore()
+// Respawning used to build a brand new player from the name alone, which silently
+// threw away the colour and the database id, so the snake lost its colour and its
+// best score stopped saving after the first death.
+func (g *InGame) respawnPlayer() {
+	g.client.SetState(&InGame{
+		player: &objects.Player{
+			Name:      g.player.Name,
+			DbId:      g.player.DbId,
+			BestScore: g.player.BestScore,
+			Color:     g.player.Color,
+		},
+	})
 }
 
 func (g *InGame) getOtherPlayer(otherId uint64) (*objects.Player, error) {
@@ -297,9 +337,26 @@ func (g *InGame) syncPlayerBestScore() {
 }
 
 func (g *InGame) OnExit() {
-	if g.cancelPlayerUpdateLoop != nil {
-		g.cancelPlayerUpdateLoop()
+	g.exitOnce.Do(func() {
+		if g.cancelPlayerUpdateLoop != nil {
+			g.cancelPlayerUpdateLoop()
+		}
+		g.client.SharedGameObjects().Players.Remove(g.client.Id())
+		go g.syncPlayerBestScore()
+	})
+}
+
+func (g *InGame) dropAllMass() {
+	mass := radToMass(g.player.Radius)
+	count := min(max(int(mass/40), 3), 60)
+	for i := 0; i < count; i++ {
+		x, y := objects.SpawnNear(g.player.X, g.player.Y, 150)
+		book := &objects.Spore{X: x, Y: y, Radius: 8}
+		bookId := g.client.SharedGameObjects().Spores.Add(book)
+		// Broadcast skips the sender, so the dead snake has to be told separately or
+		// its own remains never appear on its screen.
+		sporePacket := packets.NewSpore(bookId, book)
+		go g.client.SocketSend(sporePacket)
+		g.client.Broadcast(sporePacket)
 	}
-	g.client.SharedGameObjects().Players.Remove(g.client.Id())
-	go g.syncPlayerBestScore()
 }

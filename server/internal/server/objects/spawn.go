@@ -1,6 +1,7 @@
 package objects 
 
 import (
+	"math"
 	"math/rand/v2"
 )
 
@@ -55,4 +56,10 @@ func isTooClose[T any](x float64, y float64, radius float64, objects *SharedColl
     })
 
     return tooClose
+}
+
+func SpawnNear(x float64, y float64, radius float64) (float64, float64) {
+	angle := rand.Float64() * 2 * math.Pi
+	distance := radius * math.Sqrt(rand.Float64())
+	return x + math.Cos(angle) * distance, y + math.Sin(angle) * distance
 }

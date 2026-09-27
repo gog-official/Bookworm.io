@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"server/internal/server"
 	"server/internal/server/states"
@@ -21,6 +22,18 @@ type WebSocketClient struct {
 	logger   *log.Logger
 	state    server.ClientStateHandler
 	dbTx     *server.DbTx
+
+	closeOnce sync.Once
+	// sendMux is held for reading while a packet is queued and for writing while
+	// sendChan is closed. A state that has not noticed the disconnect yet can still
+	// be mid-send, and closing the channel under it would panic the whole server.
+	sendMux sync.RWMutex
+	closed  bool
+	dropped int
+
+	// stateMux guards the state pointer only. It is never held across OnEnter/OnExit
+	// or HandleMessage, because those re-enter SetState.
+	stateMux sync.RWMutex
 }
 
 func NewWebSocketClient(hub *server.Hub, writer http.ResponseWriter, request *http.Request) (server.ClientInterfacer, error) {
@@ -36,7 +49,7 @@ func NewWebSocketClient(hub *server.Hub, writer http.ResponseWriter, request *ht
 	c := &WebSocketClient{
 		hub:      hub,
 		conn:     conn,
-		sendChan: make(chan *packets.Packet, 256),
+		sendChan: make(chan *packets.Packet, 1024),
 		logger:   log.New(log.Writer(), "Client unknown: ", log.LstdFlags),
 		dbTx:     hub.NewDbTx(),
 	}
@@ -53,16 +66,36 @@ func (c *WebSocketClient) Initialize(id uint64) {
 }
 
 func (c *WebSocketClient) ProcessMessage(senderId uint64, message packets.Msg) {
-	c.state.HandleMessage(senderId, message)
+	c.stateMux.RLock()
+	state := c.state
+	c.stateMux.RUnlock()
+	if state == nil {
+		return
+	}
+	state.HandleMessage(senderId, message)
 }
 func (c *WebSocketClient) SocketSend(message packets.Msg) {
 	c.SocketSendAs(message, c.id)
 }
 func (c *WebSocketClient) SocketSendAs(message packets.Msg, senderId uint64) {
+	c.sendMux.RLock()
+	defer c.sendMux.RUnlock()
+	if c.closed {
+		return
+	}
+
 	select {
 	case c.sendChan <- &packets.Packet{SenderId: senderId, Msg: message}:
 	default:
-		c.logger.Printf("Client %d send channel full, dropping message: %T", c.id, message)
+		// A full queue means this socket stopped draining long ago (the buffer holds
+		// ~50s of 20Hz updates), so the peer is gone no matter what. Report it once
+		// instead of twenty times a second, then tear the client down so the queue
+		// cannot keep growing and the log cannot flood.
+		c.dropped++
+		if c.dropped == 1 {
+			c.logger.Printf("send channel full, dropping message: %T", message)
+			go c.Close("send channel full")
+		}
 	}
 }
 func (c *WebSocketClient) PassToPeer(message packets.Msg, peerId uint64) {
@@ -71,8 +104,19 @@ func (c *WebSocketClient) PassToPeer(message packets.Msg, peerId uint64) {
 	}
 }
 
+// The hub drains BroadcastChan on its own goroutine, and it dispatches to clients
+// synchronously from there. So any handler that reaches a nested broadcast -- a
+// death dropping its books, a chat, a spore -- would otherwise block the hub while
+// the hub is the only thing able to unblock it, deadlocking the entire server.
 func (c *WebSocketClient) Broadcast(message packets.Msg) {
-	c.hub.BroadcastChan <- &packets.Packet{SenderId: c.id, Msg: message}
+	packet := &packets.Packet{SenderId: c.id, Msg: message}
+	select {
+	case c.hub.BroadcastChan <- packet:
+	default:
+		// Hub is mid-dispatch and the buffer is full. Hand the send to a goroutine so
+		// the caller is never blocked; it goes through as soon as the hub is idle.
+		go func() { c.hub.BroadcastChan <- packet }()
+	}
 }
 
 func (c *WebSocketClient) ReadPump() {
@@ -106,13 +150,27 @@ func (c *WebSocketClient) ReadPump() {
     }
 }
 func (c *WebSocketClient) Close(reason string) {
-	c.logger.Printf("Closing client connection because: %s", reason)
-	c.Broadcast(packets.NewDisconnect(reason))
-	c.hub.UnregisterChan <- c
-	c.conn.Close()
-	if _, closed := <-c.sendChan; !closed {
+	// Both pumps call Close on their way out, so this has to run exactly once.
+	c.closeOnce.Do(func() {
+		c.logger.Printf("Closing client connection because: %s", reason)
+
+		// Exit the current state first. A disconnect never went through SetState, so
+		// InGame.OnExit was never called and its 50ms update loop kept queueing
+		// position packets into a socket nobody was reading. That is what filled the
+		// send channel and spammed the log forever after the client vanished.
+		c.SetState(nil)
+
+		c.Broadcast(packets.NewDisconnect(reason))
+		c.hub.UnregisterChan <- c
+		c.conn.Close()
+
+		// Flag before closing, and under the write lock, so a sender that is already
+		// inside the critical section finishes queueing before the channel goes away.
+		c.sendMux.Lock()
+		c.closed = true
 		close(c.sendChan)
-	}
+		c.sendMux.Unlock()
+	})
 }
 func (c *WebSocketClient) WritePump() {
     defer func() {
@@ -149,22 +207,30 @@ func (c *WebSocketClient) WritePump() {
     }
 }
 func (c *WebSocketClient) SetState(state server.ClientStateHandler) {
-	prevStateName := "None"
-	if c.state != nil {
-		prevStateName = c.state.Name()
-		c.state.OnExit()
-	}
+	// Swap the pointer under the lock, then run the lifecycle callbacks outside it.
+	// They re-enter SetState (Connected.handleLoginRequest -> InGame), and Go's
+	// RWMutex cannot be upgraded, so holding the lock across them would self-deadlock.
+	c.stateMux.Lock()
+	prevState := c.state
+	c.state = state
 
+	prevStateName := "None"
+	if prevState != nil {
+		prevStateName = prevState.Name()
+	}
 	newStateName := "None"
 	if state != nil {
 		newStateName = state.Name()
 	}
-
 	c.logger.Printf("switching form state %s to %s", prevStateName, newStateName)
-	c.state = state
-	if c.state != nil {
-		c.state.SetClient(c)
-		c.state.OnEnter()
+	c.stateMux.Unlock()
+
+	if prevState != nil {
+		prevState.OnExit()
+	}
+	if state != nil {
+		state.SetClient(c)
+		state.OnEnter()
 	}
 }
 func (c *WebSocketClient) DbTx() *server.DbTx {

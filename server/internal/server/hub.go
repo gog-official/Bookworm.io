@@ -76,8 +76,11 @@ func NewHub() *Hub {
 		log.Fatal(err)
 	}
 	return &Hub{
-		Clients:        objects.NewSharedCollection[ClientInterfacer](),
-		BroadcastChan:  make(chan *packets.Packet),
+		Clients: objects.NewSharedCollection[ClientInterfacer](),
+		// Buffered so the common nested broadcast (a client handler that broadcasts
+		// while the hub is dispatching to it) is absorbed without blocking, and so a
+		// burst of drops does not stall the loop.
+		BroadcastChan:  make(chan *packets.Packet, 1024),
 		RegisterChan:   make(chan ClientInterfacer),
 		UnregisterChan: make(chan ClientInterfacer),
 		dbPool:         dbPool,
@@ -113,7 +116,8 @@ func (h *Hub) Run() {
 		log.Fatal(err)
 	}
 
-	go h.replenishSporesLoop(2 * time.Second)
+// go h.replenishSporesLoop(2 * time.Second)
+	go h.feedPlayersLoop(1 * time.Second)
 
 	for {
 		select {
@@ -181,5 +185,79 @@ func (h *Hub) replenishSporesLoop(rate time.Duration) {
 
 			time.Sleep(50 * time.Millisecond)
 		}
+	}
+}
+
+
+func (h *Hub) feedPlayersLoop(rate time.Duration) {
+	ticker := time.NewTicker(rate)
+	defer ticker.Stop()
+
+	const feedRadius = 1500.0
+	const targetSpores = 200
+	const maxTotalSpores = 2000
+
+	for range ticker.C {
+		spores := h.SharedGameObjects.Spores.Snapshot()
+		total := len(spores)
+
+		h.SharedGameObjects.Players.ForEach(func(playerId uint64, player *objects.Player) {
+			near := 0
+			for _, spore := range spores {
+				dx := spore.X - player.X
+				dy := spore.Y - player.Y
+				if dx*dx+dy*dy < feedRadius*feedRadius {
+					near++
+				}
+			}
+			if near >= targetSpores {
+				return
+			}
+			client, exists := h.Clients.Get(playerId)
+			if !exists {
+				return
+			}
+
+			for i := near; i < targetSpores; i++ {
+				newX, newY := objects.SpawnNear(player.X, player.Y, feedRadius)
+				newRadius := max(rand.NormFloat64()*3+10, 5)
+
+				// Plenty of room: make a brand new spore.
+				if total < maxTotalSpores {
+					spore := &objects.Spore{X: newX, Y: newY, Radius: newRadius}
+					sporeId := h.SharedGameObjects.Spores.Add(spore)
+					client.SocketSend(packets.NewSpore(sporeId, spore))
+					client.Broadcast(packets.NewSpore(sporeId, spore))
+					total++
+					continue
+				}
+
+				// Hit the cap: don't add anything. Instead grab the spore
+				var farId uint64
+				var farSpore *objects.Spore
+				farDist := -1.0
+				for id, spore := range spores {
+					dx := spore.X - player.X
+					dy := spore.Y - player.Y
+					d := dx*dx + dy*dy
+					if d > farDist {
+						farDist = d
+						farId = id
+						farSpore = spore
+					}
+				}
+				if farSpore == nil {
+					return
+				}
+				farSpore.X = newX
+				farSpore.Y = newY
+				farSpore.Radius = newRadius
+				client.SocketSend(packets.NewSpore(farId, farSpore))
+				client.Broadcast(packets.NewSpore(farId, farSpore))
+
+				// One move per player per tick is plenty.
+				return
+			}
+		})
 	}
 }
