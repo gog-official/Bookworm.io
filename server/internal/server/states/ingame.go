@@ -34,11 +34,9 @@ func (g *InGame) OnEnter() {
 	g.logger.Printf("Adding player %s to the shared collection", g.player.Name)
 	go g.client.SharedGameObjects().Players.Add(g.player, g.client.Id())
 
-	g.player.X = rand.Float64() * 1000
-	g.player.Y = rand.Float64() * 1000
 	g.player.Speed = 150.0
 	g.player.Radius = 20.0
-
+	g.player.X, g.player.Y = objects.SpawnCoords(g.player.Radius, g.client.SharedGameObjects().Players, nil)
 	g.client.SocketSend(packets.NewPlayer(g.client.Id(), g.player))
 	go func() {
 		g.client.SharedGameObjects().Spores.ForEach(func(sporeId uint64, spore *objects.Spore) {
@@ -46,7 +44,6 @@ func (g *InGame) OnEnter() {
 			g.client.SocketSend(packets.NewSpore(sporeId, spore))
 		})
 	}()
-	g.player.X, g.player.Y = objects.SpawnCoords(g.player.Radius, g.client.SharedGameObjects().Players, nil)
 }
 
 func (g *InGame) syncPlayer(delta float64) {

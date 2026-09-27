@@ -58,5 +58,7 @@ func (s *SharedCollection[T]) Get(id uint64) (T, bool){
 	return obj, ok
 }
 func (s *SharedCollection[T]) Len() int{
+	s.mapMux.Lock()
+	defer s.mapMux.Unlock()
 	return len(s.objectsMap)
 }

@@ -5,8 +5,6 @@ const packets := preload("res://packets.gd")
 var _action_on_ok_received: Callable
 
 @onready var _log: Log = $UI/MarginContainer/VBoxContainer/Log
-@onready
-var _register_button: Button = $UI/MarginContainer/VBoxContainer/HBoxContainer/RegisterButton
 @onready var _login_form: LoginForm = $UI/MarginContainer/VBoxContainer/LoginForm
 @onready var _register_form: RegisterForm = $UI/MarginContainer/VBoxContainer/RegisterForm
 @onready var _register_prompt: RichTextLabel = $UI/MarginContainer/VBoxContainer/RegisterPrompt

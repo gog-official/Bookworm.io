@@ -43,7 +43,7 @@ func (b *BrowsingHiscores) OnEnter() {
 	hiscoreMessages := make([]*packets.HiscoreMessage, 0, limit)
 	for rank, scoreRow := range topScores {
 		hiscoreMessage := &packets.HiscoreMessage{
-			Rank:  uint64(rank+1) + uint64(offset) + 1,
+			Rank:  uint64(rank) + uint64(offset) + 1,
 			Name:  scoreRow.Name,
 			Score: uint64(scoreRow.BestScore),
 		}
@@ -78,7 +78,7 @@ func (b *BrowsingHiscores) handleSearchHiscore(_ uint64, message *packets.Packet
 		return
 	}
 	const limit int64 = 10
-	offset := playerRank - limit/2
+	offset := playerRank - 1 - limit/2
 	b.sendTopScores(limit, max(0, offset))
 }
 func (b *BrowsingHiscores) sendTopScores(limit int64, offset int64) {
@@ -104,6 +104,4 @@ func (b *BrowsingHiscores) sendTopScores(limit int64, offset int64) {
 	b.client.SocketSend(packets.NewHiscoreBoard(hiscoreMessages))
 }
 func (b *BrowsingHiscores) OnExit() {
-	b.sendTopScores(10, 0)
-
 }

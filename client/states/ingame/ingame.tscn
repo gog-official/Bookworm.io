@@ -59,8 +59,7 @@ placeholder_text = "type message"
 [node name="Send" type="Button" parent="UI/MarginContainer/VBoxContainer/HBoxContainer" unique_id=712664812]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("4_ll2wp")
-text = "Send
-"
+text = "Send"
 
 [node name="World" type="Node2D" parent="." unique_id=295413523]
 

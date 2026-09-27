@@ -52,6 +52,14 @@ func _on_ws_packet_recieved(packet: packets.Packet) -> void:
 		_handle_spore_consumed_msg(sender_id, packet.get_spore_consumed())
 	elif packet.has_disconnect():
 		_handle_disconnect_msg(sender_id, packet.get_disconnect())
+	elif packet.has_player_consumed():
+		_handle_player_consumed_msg(sender_id, packet.get_player_consumed())
+
+
+func _handle_player_consumed_msg(_sender_id: int, msg: packets.PlayerConsumedMessage) -> void:
+	var victim_id := msg.get_player_id()
+	if victim_id != GameManager.client_id and victim_id in _players:
+		_remove_actor(_players[victim_id])
 
 
 func _handle_disconnect_msg(sender_id: int, disconnect_msg: packets.DisconnectMessage) -> void:
@@ -176,15 +184,10 @@ func _update_actor(
 ) -> void:
 	var actor := _players[actor_id]
 	_set_actor_mass(actor, _radius_to_mass(radius))
-	actor.radius = radius
 	var server_position := Vector2(x, y)
 
 	if actor.position.distance_squared_to(server_position) > 50:
 		actor.server_position = server_position
-
-	if actor.position.distance_squared_to(Vector2(x, y)) > 100:
-		actor.position.x = x
-		actor.position.y = y
 
 	if not is_player:
 		actor.velocity = Vector2.from_angle(direction) * speed
@@ -212,8 +215,8 @@ func _consume_actor(actor: Actor) -> void:
 	var actor_mass := _radius_to_mass(actor.radius)
 	_set_actor_mass(player, player_mass + actor_mass)
 	var packet := packets.Packet.new()
-	var spore_consumed_msg := packet.new_player_consumed()
-	spore_consumed_msg.set_spore_id(actor.actor_id)
+	var player_consumed_msg := packet.new_player_consumed()
+	player_consumed_msg.set_player_id(actor.actor_id)
 	WsClient.send(packet)
 	_remove_actor(actor)
 

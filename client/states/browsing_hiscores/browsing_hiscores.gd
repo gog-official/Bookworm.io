@@ -42,6 +42,8 @@ func _on_back_button_pressed() -> void:
 func _on_ws_packet_received(packet: packets.Packet) -> void:
 	if packet.has_hiscore_board():
 		_handle_hiscore_board_msg(packet.get_hiscore_board())
+	elif packet._has_deny_response():
+		_handle_deny_response(packet.get_deny_response())
 
 
 func _handle_hiscore_board_msg(hiscore_board_msg: packets.HiscoreBoardMessage) -> void:
@@ -50,7 +52,7 @@ func _handle_hiscore_board_msg(hiscore_board_msg: packets.HiscoreBoardMessage) -
 		var name := hiscore_msg.get_name()
 		var rank_n_name := "%d. %s" % [hiscore_msg.get_rank(), name]
 		var score := hiscore_msg.get_score()
-		var hl := name.to_lower() == _line_edit.text.to_lower()
+		var hl := name.to_lower().contains(_line_edit.text.to_lower())
 		_hs.set_hiscore(rank_n_name, score, hl)
 
 

@@ -54,6 +54,7 @@ static func instantiate(
 
 # Called when t he node enters the scene tree for the first time.
 func _ready() -> void:
+	_cam.enabled = is_player
 	position.x = start_x
 	position.y = start_y
 	server_position = position
@@ -99,7 +100,7 @@ func _input(event):
 
 func _update_zoom() -> void:
 	if is_node_ready():
-		_nameplate.add_theme_font_override("font_size", max(16, radius / 2))
+		_nameplate.add_theme_font_size_override("font_size", max(16, radius / 2))
 	if not is_player:
 		return
 

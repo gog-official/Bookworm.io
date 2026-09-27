@@ -66,13 +66,7 @@ func (c *Connected) handleLoginRequest(senderId uint64, message *packets.Packet_
         return
     }
 	c.logger.Printf("User %s logged in successfully", username)
-    c.client.SocketSend(packets.NewOkResponse())
-	c.client.SetState(&InGame{
-		player: &objects.Player{
-			Name: username,
-		},
-	})
-
+  c.client.SocketSend(packets.NewOkResponse())
 	player, err := c.queries.GetPlayerByUserID(c.dbCtx, user.ID)
 
 	if err != nil{
@@ -80,6 +74,7 @@ func (c *Connected) handleLoginRequest(senderId uint64, message *packets.Packet_
 		c.client.SocketSend(genericFailMessage)
 		return
 	}
+
 	c.client.SetState(&InGame{
 		player: &objects.Player{
 			Name: player.Name,
