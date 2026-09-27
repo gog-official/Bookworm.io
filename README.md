@@ -54,22 +54,6 @@ The server reads `server/.env` on start, or whatever you pass with `--config`.
 | `CERT_PATH` | —       | Path to the TLS certificate, no TLS when missing                        |
 | `KEY_PATH`  | —       | Path to the TLS key                                                     |
 
-## Docker
-
-```bash
-# Build
-docker build -t bookworm -f server/Dockerfile .
-
-# Run
-docker run -p 8080:8080 --env-file .env -v "$(pwd)/certs:/gameserver/certs" bookworm
-
-# Or, with the compose file
-docker compose -f server/compose.yaml up
-```
-
-The image is a distroless static build pinned to port `10000`, which is what Render wants,
-and the data dir is a volume so the sqlite file survives a redeploy.
-
 ## Deployment
 
 - Push the branch and let Render build `server/Dockerfile`
