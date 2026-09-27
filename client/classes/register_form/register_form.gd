@@ -16,10 +16,14 @@ func _ready() -> void:
 	_confirm_button.pressed.connect(_on_confirm_button_pressed)
 	_cancel_button.pressed.connect(_on_cancel_button_pressed)
 
+	_username_field.max_length = 20
+	_password_field.max_length = 72
+	_confirm_password_field.max_length = 72
+
 
 func _on_confirm_button_pressed() -> void:
 	form_submitted.emit(
-		_username_field.text,
+		_username_field.text.strip_edges(),
 		_password_field.text,
 		_confirm_password_field.text,
 		_color_picker.color

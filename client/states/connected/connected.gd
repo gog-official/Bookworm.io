@@ -2,6 +2,11 @@ extends Node
 
 const packets := preload("res://packets.gd")
 
+const MIN_USERNAME_LENGTH := 3
+const MAX_USERNAME_LENGTH := 20
+const MIN_PASSWORD_LENGTH := 8
+const MAX_PASSWORD_LENGTH := 72
+
 var _action_on_ok_received: Callable
 
 @onready var _log: Log = $UI/MarginContainer/VBoxContainer/Log
@@ -23,6 +28,15 @@ func _ready() -> void:
 func _on_register_form_submitted(
 	username: String, password: String, confirm_password: String, color: Color
 ) -> void:
+	if username.length() < MIN_USERNAME_LENGTH or username.length() > MAX_USERNAME_LENGTH:
+		_log.error("Username must be %d-%d characters" % [MIN_USERNAME_LENGTH, MAX_USERNAME_LENGTH])
+		return
+	if password.length() < MIN_PASSWORD_LENGTH:
+		_log.error("Password must be at least %d characters" % MIN_PASSWORD_LENGTH)
+		return
+	if password.length() > MAX_PASSWORD_LENGTH:
+		_log.error("Password must be at most %d characters" % MAX_PASSWORD_LENGTH)
+		return
 	if password != confirm_password:
 		_log.error("Passwords do not match")
 		return

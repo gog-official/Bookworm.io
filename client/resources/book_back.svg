@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <path
+    d="M22 25
+       Q22 19 29 20
+       L103 31
+       Q108 32 108 38
+       L108 91
+       Q108 97 102 98
+       L30 88
+       Q22 87 22 80 Z"
+    fill="#ffffff"
+    stroke="#4a4a4a"
+    stroke-width="3"/>
+</svg>

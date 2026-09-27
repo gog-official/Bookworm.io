@@ -42,7 +42,7 @@ func _on_back_button_pressed() -> void:
 func _on_ws_packet_received(packet: packets.Packet) -> void:
 	if packet.has_hiscore_board():
 		_handle_hiscore_board_msg(packet.get_hiscore_board())
-	elif packet._has_deny_response():
+	elif packet.has_deny_response():
 		_handle_deny_response(packet.get_deny_response())
 
 

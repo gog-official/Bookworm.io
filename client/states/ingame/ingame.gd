@@ -6,6 +6,24 @@ const Spore := preload("res://objects/spores/spore.gd")
 
 var _players: Dictionary[int, Actor]
 var _spores: Dictionary[int, Spore]
+# Seconds of immunity after (re)spawning, so you cannot die inside a snake you were
+# just placed on top of.
+var _spawn_protection := SPAWN_PROTECTION
+# victim id -> time we last reported it, so a single collision is not resent every
+# frame while the server catches up.
+var _reported_deaths: Dictionary[int, float] = {}
+# Set when the server tells us we died, so the next position we hear about is a
+# respawn rather than ordinary movement.
+var _awaiting_respawn := false
+
+# Slither kills on contact. The reach is the two drawn widths that actually touch,
+# so a fat snake is not any easier to slip past and a thin one is not a free pass.
+const SNAKE_HIT_REACH_RATIO := 1.0
+# Point 0 is the head and point 1 sits one spacing behind it; both are still head,
+# and head-to-head is handled separately as a mutual kill.
+const SNAKE_BODY_START_INDEX := 2
+const SPAWN_PROTECTION := 1.5
+const DEATH_REPORT_COOLDOWN := 2.0
 
 @onready var _logout_button: Button = $UI/MarginContainer/VBoxContainer/HBoxContainer/Logout
 @onready var _line_edit: LineEdit = $UI/MarginContainer/VBoxContainer/HBoxContainer/LineEdit
@@ -13,6 +31,7 @@ var _spores: Dictionary[int, Spore]
 @onready var _log: Log = $UI/MarginContainer/VBoxContainer/Log
 @onready var _hiscores: Hiscores = $UI/MarginContainer/VBoxContainer/Hiscores
 @onready var _world: Node2D = $World
+@onready var _minimap: Minimap = $UI/Minimap
 
 
 # Called when the node enters the scene tree for the first time.
@@ -22,6 +41,7 @@ func _ready() -> void:
 	WsClient.packet_received.connect(_on_ws_packet_recieved)
 	_logout_button.pressed.connect(_on_logout_button_pressed)
 	_send_button.pressed.connect(_on_send_button_pressed)
+	_minimap.setup(_players)
 
 
 func _on_logout_button_pressed() -> void:
@@ -58,7 +78,12 @@ func _on_ws_packet_recieved(packet: packets.Packet) -> void:
 
 func _handle_player_consumed_msg(_sender_id: int, msg: packets.PlayerConsumedMessage) -> void:
 	var victim_id := msg.get_player_id()
-	if victim_id != GameManager.client_id and victim_id in _players:
+	if victim_id == GameManager.client_id:
+		# Somebody ran into us. The server drops our mass and teleports us to a fresh
+		# spawn, which arrives as the next Player message; arm the grace period now so
+		# the corpse cannot report a kill on the way out.
+		_arm_local_death()
+	elif victim_id in _players:
 		_remove_actor(_players[victim_id])
 
 
@@ -129,8 +154,7 @@ func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> vo
 	if actor_id not in _players:
 		_add_actor(actor_id, actor_name, x, y, radius, speed, is_player, color)
 	else:
-		var dir := player_msg.get_direction()
-		_update_actor(actor_id, x, y, dir, radius, speed, is_player)
+		_update_actor(actor_id, x, y, radius)
 
 
 func _handle_spore_msg(sender_id: int, spore_msg: packets.SporeMessage) -> void:
@@ -147,10 +171,15 @@ func _handle_spore_msg(sender_id: int, spore_msg: packets.SporeMessage) -> void:
 			player_pos.distance_squared_to(spore_pos) < player.radius * player.radius
 		)
 
-	if spore_id not in _spores:
-		var spore := Spore.instantiate(spore_id, x, y, radius, underneath_player)
-		_world.add_child(spore)
-		_spores[spore_id] = spore
+	if spore_id in _spores:
+		var spore := _spores[spore_id]
+		spore.position = Vector2(x, y)
+		spore.underneath_player = underneath_player
+		return
+
+	var spore := Spore.instantiate(spore_id, x, y, radius, underneath_player)
+	_world.add_child(spore)
+	_spores[spore_id] = spore
 
 
 func _add_actor(
@@ -167,58 +196,33 @@ func _add_actor(
 	_world.add_child(actor)
 	actor.z_index = 1
 	_set_actor_mass(actor, _radius_to_mass(radius))
+	actor.push_snapshot(x, y)
 	_players[actor_id] = actor
 
 	if is_player:
 		actor.area_entered.connect(_on_player_area_entered)
+		actor.magnet_area_entered.connect(_on_player_magnet_area_entered)
+		# Grace starts when we actually join the world, not when the scene loaded,
+		# because logging in can take longer than the countdown.
+		_spawn_protection = SPAWN_PROTECTION
 
 
-func _update_actor(
-	actor_id: int,
-	x: float,
-	y: float,
-	direction: float,
-	radius: float,
-	speed: float,
-	is_player: bool
-) -> void:
+func _update_actor(actor_id: int, x: float, y: float, radius: float) -> void:
 	var actor := _players[actor_id]
 	_set_actor_mass(actor, _radius_to_mass(radius))
-	var server_position := Vector2(x, y)
-
-	if actor.position.distance_squared_to(server_position) > 50:
-		actor.server_position = server_position
-
-	if not is_player:
-		actor.velocity = Vector2.from_angle(direction) * speed
+	if _awaiting_respawn and actor_id == GameManager.client_id:
+		_awaiting_respawn = false
+		_reported_deaths.erase(actor_id)
+		actor.respawn(x, y, radius)
+		return
+	# The actor buffers this and interpolates between it and the next one at
+	# render time, so no snapping or extrapolation happens here.
+	actor.push_snapshot(x, y)
 
 
 func _on_player_area_entered(area: Area2D) -> void:
 	if area is Spore:
 		_consume_spore(area as Spore)
-	elif area is Actor:
-		_collide_actor(area as Actor)
-
-
-func _collide_actor(actor: Actor) -> void:
-	var player := _players[GameManager.client_id]
-	var player_mass := _radius_to_mass(player.radius)
-	var actor_mass := _radius_to_mass(actor.radius)
-
-	if player_mass > actor_mass * 1.5:
-		_consume_actor(actor)
-
-
-func _consume_actor(actor: Actor) -> void:
-	var player = _players[GameManager.client_id]
-	var player_mass := _radius_to_mass(player.radius)
-	var actor_mass := _radius_to_mass(actor.radius)
-	_set_actor_mass(player, player_mass + actor_mass)
-	var packet := packets.Packet.new()
-	var player_consumed_msg := packet.new_player_consumed()
-	player_consumed_msg.set_player_id(actor.actor_id)
-	WsClient.send(packet)
-	_remove_actor(actor)
 
 
 func _remove_actor(actor: Actor) -> void:
@@ -231,6 +235,8 @@ func _consume_spore(spore: Spore) -> void:
 	if spore.underneath_player:
 		return
 	var player = _players[GameManager.client_id]
+	if spore.is_settling():
+		return
 	var player_mass := _radius_to_mass(player.radius)
 	var spore_mass := _radius_to_mass(spore.rad)
 	_set_actor_mass(player, player_mass + spore_mass)
@@ -244,3 +250,105 @@ func _consume_spore(spore: Spore) -> void:
 func _remove_spore(spore: Spore) -> void:
 	_spores.erase(spore.spore_id)
 	spore.queue_free()
+
+
+# just 4 minimap
+func _process(delta: float) -> void:
+	_spawn_protection = maxf(_spawn_protection - delta, 0.0)
+	_check_snake_hits()
+	if GameManager.client_id in _players:
+		var local_player = _players[GameManager.client_id]
+		if is_instance_valid(local_player):
+			_minimap.set_local_position(local_player.position)
+
+
+func _on_player_magnet_area_entered(area: Area2D) -> void:
+	if area is Spore and GameManager.client_id in _players:
+		var spore := area as Spore
+		if spore.is_settling():
+			return
+		var player := _players[GameManager.client_id]
+		spore.attract_to(player, Actor.MAGNET_PULL_SPEED)
+
+
+# Slither.io kills on contact and has no size rule at all: the head is the lethal
+# part, and it is the snake that owns the head which dies. So driving your own head
+# into somebody kills you, and letting somebody else's head touch your body kills
+# them -- a giant running into a tiny snake's tail dies just as surely.
+func _check_snake_hits() -> void:
+	if not (GameManager.client_id in _players):
+		return
+	var me := _players[GameManager.client_id]
+	if not is_instance_valid(me) or _spawn_protection > 0.0:
+		return
+
+	for id in _players:
+		if id == GameManager.client_id:
+			continue
+		var other := _players[id]
+		if not is_instance_valid(other):
+			continue
+
+		var their_head_in_my_body := _head_hits_body(other, me)
+		var my_head_in_their_body := _head_hits_body(me, other)
+		if not (their_head_in_my_body or my_head_in_their_body):
+			continue
+
+		var head_reach := (me.radius + other.radius) * Actor.HEAD_WIDTH_SCALE
+		if me.position.distance_to(other.position) < head_reach:
+			# Heads met, which is neither snake's head inside a body. Slither kills
+			# both, so each side reports the other and its own death.
+			_report_death(other.actor_id)
+			_report_death(me.actor_id)
+			continue
+
+		if their_head_in_my_body:
+			_report_death(other.actor_id)
+		if my_head_in_their_body:
+			_report_death(me.actor_id)
+
+
+# Does `attacker`'s head reach into `victim`'s body? Measured against the drawn head
+# and body widths, and skipping the two points that still count as the head.
+func _head_hits_body(attacker: Actor, victim: Actor) -> bool:
+	var reach := attacker.radius * Actor.HEAD_WIDTH_SCALE + victim.radius * Actor.BODY_WIDTH_SCALE
+	var head := attacker.position
+	var count := victim.body_point_count()
+	for i in range(SNAKE_BODY_START_INDEX, count - 1):
+		if _point_to_segment_distance(head, victim.body_point(i), victim.body_point(i + 1)) < reach:
+			return true
+	return false
+
+
+# Distance from a point to a segment, so a fast-moving head cannot tunnel through a
+# body link by landing past it between two frames.
+static func _point_to_segment_distance(p: Vector2, a: Vector2, b: Vector2) -> float:
+	var ab := b - a
+	var length_sq := ab.length_squared()
+	if length_sq < 0.0001:
+		return p.distance_to(a)
+	var t := clampf((p - a).dot(ab) / length_sq, 0.0, 1.0)
+	return p.distance_to(a + ab * t)
+
+
+func _report_death(victim_id: int) -> void:
+	var now := Time.get_ticks_msec() / 1000.0
+	var last: float = _reported_deaths.get(victim_id, -INF)
+	if now - last < DEATH_REPORT_COOLDOWN:
+		return
+	_reported_deaths[victim_id] = now
+
+	var packet := packets.Packet.new()
+	var msg := packet.new_player_consumed()
+	msg.set_player_id(victim_id)
+	WsClient.send(packet)
+
+	if victim_id == GameManager.client_id:
+		# We reported our own head running into somebody, so the server is not going
+		# to broadcast it back to us. Arm the death here instead of waiting.
+		_arm_local_death()
+
+
+func _arm_local_death() -> void:
+	_spawn_protection = SPAWN_PROTECTION
+	_awaiting_respawn = true
