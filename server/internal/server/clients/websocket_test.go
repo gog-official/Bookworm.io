@@ -23,7 +23,7 @@ const teardownTimeout = 2 * time.Second
 func newTestClient(t *testing.T) *WebSocketClient {
 	t.Helper()
 
-	hub := server.NewHub()
+	hub := server.NewHub(t.TempDir())
 	finished := make(chan struct{})
 	var drainers sync.WaitGroup
 	drainers.Add(2)
@@ -195,7 +195,7 @@ func TestFullSendChannelTearsTheClientDown(t *testing.T) {
 // wait on the one goroutine that could unblock it. That froze broadcasts, message
 // dispatch and every respawn for the whole server.
 func TestBroadcastDoesNotBlockOnABusyHub(t *testing.T) {
-	hub := server.NewHub()
+	hub := server.NewHub(t.TempDir())
 
 	// Nothing is draining, which is exactly the state of a hub sitting inside a
 	// client handler.

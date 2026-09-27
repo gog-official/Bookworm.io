@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 	"net/http"
+	"path"
 	"server/internal/server/objects"
 	"server/pkg/packets"
 	"time"
@@ -70,8 +71,8 @@ type ClientStateHandler interface {
 	OnExit()
 }
 
-func NewHub() *Hub {
-	dbPool, err := sql.Open("sqlite", "db.sqlite")
+func NewHub(dataPath string) *Hub {
+	dbPool, err := sql.Open("sqlite", path.Join(dataPath, "db.sqlite"))
 	if err != nil {
 		log.Fatal(err)
 	}
