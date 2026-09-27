@@ -2,6 +2,8 @@ extends Node
 
 const packets := preload("res://packets.gd")
 
+const SERVER_URL := "wss://bookworm-927r.onrender.com/ws"
+
 @onready var _log: Log = $UI/Log
 
 
@@ -12,7 +14,7 @@ func _ready() -> void:
 	WsClient.packet_received.connect(_on_ws_packet_received)
 
 	_log.info("Connecting to server...")
-	WsClient.connect_to_url("wss://bookworm.onrender.com/ws")
+	WsClient.connect_to_url(SERVER_URL)
 
 
 func _on_ws_connected_to_server() -> void:
