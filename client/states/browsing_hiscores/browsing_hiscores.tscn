@@ -1,3 +1,82 @@
 [gd_scene format=3 uid="uid://4dixftth84gm"]
 
+[ext_resource type="Script" uid="uid://bi2o00i10acyd" path="res://states/browsing_hiscores/browsing_hiscores.gd" id="1_gr358"]
+[ext_resource type="PackedScene" uid="uid://djsifm44fqoay" path="res://classes/highscores/hiscores.tscn" id="2_jq3og"]
+[ext_resource type="Script" uid="uid://j22s314pk4mi" path="res://classes/log/log.gd" id="3_jq3og"]
+[ext_resource type="Shader" uid="uid://de3hg523n1vpg" path="res://resources/bg_effects.gdshader" id="4_extph"]
+[ext_resource type="FontFile" uid="uid://bhnl0qne5si4x" path="res://resources/fonts/MidnightLetters-Regular.otf" id="4_itgbc"]
+[ext_resource type="Theme" uid="uid://bescrmgmffkug" path="res://resources/game_theme.tres" id="4_mcnxg"]
+[ext_resource type="Texture2D" uid="uid://cffh5nkdf2nme" path="res://resources/images.jpg" id="5_itgbc"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_mcnxg"]
+shader = ExtResource("4_extph")
+shader_parameter/amplitutde = Vector2(1, 0)
+shader_parameter/speed = Vector2(1, 0)
+
 [node name="BrowsingHiscores" type="Node" unique_id=1164557512]
+script = ExtResource("1_gr358")
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=343432716]
+texture_repeat = 2
+material = SubResource("ShaderMaterial_mcnxg")
+texture = ExtResource("5_itgbc")
+centered = false
+region_enabled = true
+region_rect = Rect2(0, 0, 1280, 720)
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1308995137]
+
+[node name="MarginContainer" type="MarginContainer" parent="UI" unique_id=1674286187]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="UI/MarginContainer" unique_id=1888002474]
+layout_mode = 2
+theme = ExtResource("4_mcnxg")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="UI/MarginContainer/VBoxContainer" unique_id=1570226148]
+layout_mode = 2
+theme_override_fonts/bold_font = ExtResource("4_itgbc")
+theme_override_font_sizes/bold_font_size = 40
+bbcode_enabled = true
+text = "[center][rainbow][shake][b]Bookworm.io/Highscores[/b][/shake][/rainbow][/center]"
+fit_content = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="UI/MarginContainer/VBoxContainer" unique_id=306744544]
+layout_mode = 2
+
+[node name="Button" type="Button" parent="UI/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1307514992]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_itgbc")
+text = "Back"
+
+[node name="LineEdit" type="LineEdit" parent="UI/MarginContainer/VBoxContainer/HBoxContainer" unique_id=234411504]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("4_itgbc")
+placeholder_text = "search"
+
+[node name="Search" type="Button" parent="UI/MarginContainer/VBoxContainer/HBoxContainer" unique_id=1905065]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("4_itgbc")
+text = "Search"
+
+[node name="Hiscores" parent="UI/MarginContainer/VBoxContainer" unique_id=431446689 instance=ExtResource("2_jq3og")]
+custom_minimum_size = Vector2(400, 400)
+layout_mode = 2
+
+[node name="Log" type="RichTextLabel" parent="UI/MarginContainer/VBoxContainer" unique_id=1913795622]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_fonts/normal_font = ExtResource("4_itgbc")
+scroll_following = true
+scroll_following_visible_characters = true
+script = ExtResource("3_jq3og")
+metadata/_custom_type_script = "uid://j22s314pk4mi"

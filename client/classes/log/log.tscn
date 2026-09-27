@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://cjf54ac2okcva"]
 
+[ext_resource type="FontFile" uid="uid://bhnl0qne5si4x" path="res://resources/fonts/MidnightLetters-Regular.otf" id="1_ah0n2"]
 [ext_resource type="Script" uid="uid://j22s314pk4mi" path="res://classes/log/log.gd" id="1_cs1qp"]
 
 [node name="Log" type="RichTextLabel" unique_id=1525173092]
@@ -8,6 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_fonts/normal_font = ExtResource("1_ah0n2")
 bbcode_enabled = true
 scroll_following = true
 scroll_following_visible_characters = true

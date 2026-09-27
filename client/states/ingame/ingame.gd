@@ -7,9 +7,11 @@ const Spore := preload("res://objects/spores/spore.gd")
 var _players: Dictionary[int, Actor]
 var _spores: Dictionary[int, Spore]
 
-@onready var _line_edit: LineEdit = $UI/VBoxContainer/LineEdit
-@onready var _log: Log = $UI/VBoxContainer/Log
-@onready var _hiscores: Hiscores = $UI/VBoxContainer/Hiscores
+@onready var _logout_button: Button = $UI/MarginContainer/VBoxContainer/HBoxContainer/Logout
+@onready var _line_edit: LineEdit = $UI/MarginContainer/VBoxContainer/HBoxContainer/LineEdit
+@onready var _send_button: Button = $UI/MarginContainer/VBoxContainer/HBoxContainer/Send
+@onready var _log: Log = $UI/MarginContainer/VBoxContainer/Log
+@onready var _hiscores: Hiscores = $UI/MarginContainer/VBoxContainer/Hiscores
 @onready var _world: Node2D = $World
 
 
@@ -18,6 +20,20 @@ func _ready() -> void:
 	_line_edit.text_submitted.connect(_on_line_edit_text_submitted)
 	WsClient.connection_closed.connect(_on_ws_connection_closed)
 	WsClient.packet_received.connect(_on_ws_packet_recieved)
+	_logout_button.pressed.connect(_on_logout_button_pressed)
+	_send_button.pressed.connect(_on_send_button_pressed)
+
+
+func _on_logout_button_pressed() -> void:
+	var packet := packets.Packet.new()
+	var disconnect_msg := packet.new_disconnect()
+	disconnect_msg.set_reason("logged out")
+	WsClient.send(packet)
+	GameManager.set_state(GameManager.State.CONNECTED)
+
+
+func _on_send_button_pressed() -> void:
+	_on_line_edit_text_submitted(_line_edit.text)
 
 
 func _on_ws_connection_closed() -> void:
@@ -34,6 +50,16 @@ func _on_ws_packet_recieved(packet: packets.Packet) -> void:
 		_handle_spore_msg(sender_id, packet.get_spore())
 	elif packet.has_spore_consumed():
 		_handle_spore_consumed_msg(sender_id, packet.get_spore_consumed())
+	elif packet.has_disconnect():
+		_handle_disconnect_msg(sender_id, packet.get_disconnect())
+
+
+func _handle_disconnect_msg(sender_id: int, disconnect_msg: packets.DisconnectMessage) -> void:
+	if sender_id in _players:
+		var player := _players[sender_id]
+		var reason := disconnect_msg.get_reason()
+		_log.info("%s disconnected because %s" % [player.actor_name, reason])
+		_remove_actor(player)
 
 
 func _handle_spore_consumed_msg(
@@ -86,11 +112,14 @@ func _handle_player_msg(sender_id: int, player_msg: packets.PlayerMessage) -> vo
 	var y := player_msg.get_y()
 	var radius := player_msg.get_radius()
 	var speed := player_msg.get_speed()
+	var color_hex := player_msg.get_color()
+
+	var color := Color.hex(color_hex)
 
 	var is_player := actor_id == GameManager.client_id
 
 	if actor_id not in _players:
-		_add_actor(actor_id, actor_name, x, y, radius, speed, is_player)
+		_add_actor(actor_id, actor_name, x, y, radius, speed, is_player, color)
 	else:
 		var dir := player_msg.get_direction()
 		_update_actor(actor_id, x, y, dir, radius, speed, is_player)
@@ -101,9 +130,17 @@ func _handle_spore_msg(sender_id: int, spore_msg: packets.SporeMessage) -> void:
 	var x := spore_msg.get_x()
 	var y := spore_msg.get_y()
 	var radius := spore_msg.get_radius()
+	var underneath_player := false
+	if GameManager.client_id in _players:
+		var player := _players[GameManager.client_id]
+		var player_pos := Vector2(player.position.x, player.position.y)
+		var spore_pos := Vector2(x, y)
+		underneath_player = (
+			player_pos.distance_squared_to(spore_pos) < player.radius * player.radius
+		)
 
 	if spore_id not in _spores:
-		var spore := Spore.instantiate(spore_id, x, y, radius)
+		var spore := Spore.instantiate(spore_id, x, y, radius, underneath_player)
 		_world.add_child(spore)
 		_spores[spore_id] = spore
 
@@ -115,10 +152,12 @@ func _add_actor(
 	y: float,
 	radius: float,
 	speed: float,
-	is_player: bool
+	is_player: bool,
+	color: Color
 ) -> void:
-	var actor := Actor.instantiate(actor_id, actor_name, x, y, radius, speed, is_player)
+	var actor := Actor.instantiate(actor_id, actor_name, x, y, radius, speed, is_player, color)
 	_world.add_child(actor)
+	actor.z_index = 1
 	_set_actor_mass(actor, _radius_to_mass(radius))
 	_players[actor_id] = actor
 
@@ -138,6 +177,10 @@ func _update_actor(
 	var actor := _players[actor_id]
 	_set_actor_mass(actor, _radius_to_mass(radius))
 	actor.radius = radius
+	var server_position := Vector2(x, y)
+
+	if actor.position.distance_squared_to(server_position) > 50:
+		actor.server_position = server_position
 
 	if actor.position.distance_squared_to(Vector2(x, y)) > 100:
 		actor.position.x = x
@@ -182,6 +225,8 @@ func _remove_actor(actor: Actor) -> void:
 
 
 func _consume_spore(spore: Spore) -> void:
+	if spore.underneath_player:
+		return
 	var player = _players[GameManager.client_id]
 	var player_mass := _radius_to_mass(player.radius)
 	var spore_mass := _radius_to_mass(spore.rad)

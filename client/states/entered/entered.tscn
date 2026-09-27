@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://m8bsv82be1ry"]
 
 [ext_resource type="Script" uid="uid://2t3yqvbbh41i" path="res://states/entered/entered.gd" id="1_jjk2u"]
+[ext_resource type="FontFile" uid="uid://bhnl0qne5si4x" path="res://resources/fonts/MidnightLetters-Regular.otf" id="2_cjx30"]
 [ext_resource type="Script" uid="uid://j22s314pk4mi" path="res://classes/log/log.gd" id="2_ltgjr"]
 
 [node name="Entered" type="Node" unique_id=462915793]
@@ -14,5 +15,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_fonts/normal_font = ExtResource("2_cjx30")
 script = ExtResource("2_ltgjr")
 metadata/_custom_type_script = "uid://j22s314pk4mi"

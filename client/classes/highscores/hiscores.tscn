@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://djsifm44fqoay"]
 
 [ext_resource type="Script" uid="uid://bfeli6j1k5nk7" path="res://classes/highscores/hiscores.gd" id="1_h2f07"]
+[ext_resource type="FontFile" uid="uid://bhnl0qne5si4x" path="res://resources/fonts/MidnightLetters-Regular.otf" id="2_jrelo"]
 
 [node name="Hiscores" type="ScrollContainer" unique_id=431446689]
 anchors_preset = 15
@@ -22,9 +23,15 @@ layout_mode = 2
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("2_jrelo")
 text = "liech"
 
 [node name="Score" type="Label" parent="VBoxContainer/HBoxContainer" unique_id=27278526]
 layout_mode = 2
 size_flags_horizontal = 8
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 10
+theme_override_fonts/font = ExtResource("2_jrelo")
 text = "mein im arsh"

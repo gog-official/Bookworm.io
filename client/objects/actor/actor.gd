@@ -11,12 +11,17 @@ var start_y: float
 var start_rad: float
 var speed: float
 var is_player: bool
+var color: Color
 
+var _target_zoom := 2.0
+var _furthest_zoom_allowed := _target_zoom
+var server_position: Vector2
 var velocity: Vector2
 var radius: float:
 	set(new_radius):
 		radius = new_radius
 		_collision_shape.set_radius(radius)
+		_update_zoom()
 		queue_redraw()
 
 @onready var _nameplate: Label = $Label
@@ -31,7 +36,8 @@ static func instantiate(
 	y: float,
 	radius: float,
 	speed: float,
-	is_player: bool
+	is_player: bool,
+	color: Color
 ) -> Actor:
 	var actor := Scene.instantiate()
 	actor.actor_id = actor_id
@@ -41,6 +47,7 @@ static func instantiate(
 	actor.start_rad = radius
 	actor.speed = speed
 	actor.is_player = is_player
+	actor.color = color
 
 	return actor
 
@@ -49,6 +56,7 @@ static func instantiate(
 func _ready() -> void:
 	position.x = start_x
 	position.y = start_y
+	server_position = position
 	velocity = Vector2.RIGHT * speed
 	radius = start_rad
 
@@ -59,6 +67,8 @@ func _ready() -> void:
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(delta: float) -> void:
 	position += velocity * delta
+	server_position += velocity * delta
+	position += (server_position - position) * 0.5
 
 	if not is_player:
 		return
@@ -75,15 +85,30 @@ func _physics_process(delta: float) -> void:
 
 
 func _draw() -> void:
-	draw_circle(Vector2.ZERO, _collision_shape.radius, Color.DARK_ORCHID)
+	draw_circle(Vector2.ZERO, _collision_shape.radius, color)
 
 
 func _input(event):
 	if is_player and event is InputEventMouseButton and event.is_pressed():
 		match event.button_index:
 			MOUSE_BUTTON_WHEEL_UP:
-				_cam.zoom.x = min(4, _cam.zoom.x + 0.1)
-				_cam.zoom.y = _cam.zoom.x
+				_target_zoom = min(4, _target_zoom + 0.1)
 			MOUSE_BUTTON_WHEEL_DOWN:
-				_cam.zoom.x = max(0.1, _cam.zoom.x - 0.1)
-				_cam.zoom.y = _cam.zoom.x
+				_target_zoom = max(_furthest_zoom_allowed, _target_zoom - 0.1)
+
+
+func _update_zoom() -> void:
+	if is_node_ready():
+		_nameplate.add_theme_font_override("font_size", max(16, radius / 2))
+	if not is_player:
+		return
+
+	var new_furthest_zoom_allowed := 2 * start_rad / radius
+	if is_equal_approx(_target_zoom, _furthest_zoom_allowed):
+		_target_zoom = new_furthest_zoom_allowed
+	_furthest_zoom_allowed = new_furthest_zoom_allowed
+
+
+func _process(_delta: float) -> void:
+	if not is_equal_approx(_cam.zoom.x, _target_zoom):
+		_cam.zoom -= Vector2(1, 1) * (_cam.zoom.x - _target_zoom) * 0.05

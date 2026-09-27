@@ -1,0 +1,52 @@
+[gd_scene format=3 uid="uid://bt2fnmor3rgtg"]
+
+[ext_resource type="Script" uid="uid://d3jdnh6avyhnd" path="res://classes/login_form/login_form.gd" id="1_13f3m"]
+[ext_resource type="FontFile" uid="uid://bhnl0qne5si4x" path="res://resources/fonts/MidnightLetters-Regular.otf" id="1_q6dyo"]
+
+[node name="LoginForm" type="VBoxContainer" unique_id=930631414]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_13f3m")
+
+[node name="Username" type="LineEdit" parent="." unique_id=1069836645]
+layout_mode = 2
+focus_neighbor_left = NodePath("../Password")
+focus_neighbor_bottom = NodePath("../Password")
+focus_next = NodePath("../Password")
+focus_previous = NodePath("../HBoxContainer/HiscoresButton")
+theme_override_fonts/font = ExtResource("1_q6dyo")
+placeholder_text = "Username"
+
+[node name="Password" type="LineEdit" parent="." unique_id=87659897]
+layout_mode = 2
+focus_neighbor_left = NodePath("../HBoxContainer/LoginButton")
+focus_neighbor_top = NodePath("../Username")
+focus_neighbor_right = NodePath("../Username")
+focus_next = NodePath("../HBoxContainer/LoginButton")
+focus_previous = NodePath("../Username")
+theme_override_fonts/font = ExtResource("1_q6dyo")
+placeholder_text = "Password"
+virtual_keyboard_type = 6
+secret = true
+secret_character = "*"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=717689998]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="LoginButton" type="Button" parent="HBoxContainer" unique_id=1681323785]
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Password")
+focus_previous = NodePath("../../Password")
+theme_override_fonts/font = ExtResource("1_q6dyo")
+text = "Login"
+
+[node name="HiscoresButton" type="Button" parent="HBoxContainer" unique_id=920438895]
+layout_mode = 2
+focus_neighbor_right = NodePath("../../Username")
+focus_next = NodePath("../../Username")
+theme_override_fonts/font = ExtResource("1_q6dyo")
+text = "Highscores"

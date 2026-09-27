@@ -1,0 +1,74 @@
+[gd_scene format=3 uid="uid://digx87uq0tqp8"]
+
+[ext_resource type="Script" uid="uid://c2ybv5go1ldcb" path="res://classes/register_form/register_form.gd" id="1_bkcsx"]
+[ext_resource type="FontFile" uid="uid://bhnl0qne5si4x" path="res://resources/fonts/MidnightLetters-Regular.otf" id="2_pxjwh"]
+
+[node name="RegisterForm" type="VBoxContainer" unique_id=1153555776]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_bkcsx")
+
+[node name="Username" type="LineEdit" parent="." unique_id=1099892057]
+layout_mode = 2
+focus_neighbor_left = NodePath("../Password")
+focus_neighbor_bottom = NodePath("../Password")
+focus_next = NodePath("../Password")
+focus_previous = NodePath("../HBoxContainer/Cancel")
+theme_override_fonts/font = ExtResource("2_pxjwh")
+placeholder_text = "Username"
+
+[node name="Password" type="LineEdit" parent="." unique_id=873303744]
+layout_mode = 2
+focus_neighbor_left = NodePath("../HBoxContainer/ConfirmButton")
+focus_neighbor_top = NodePath("../Username")
+focus_neighbor_right = NodePath("../Username")
+focus_next = NodePath("../HBoxContainer/ConfirmButton")
+focus_previous = NodePath("../Username")
+theme_override_fonts/font = ExtResource("2_pxjwh")
+placeholder_text = "Password"
+virtual_keyboard_type = 6
+secret = true
+secret_character = "*"
+
+[node name="CPassword" type="LineEdit" parent="." unique_id=1799643723]
+layout_mode = 2
+focus_neighbor_left = NodePath("../HBoxContainer/ConfirmButton")
+focus_neighbor_top = NodePath("../Username")
+focus_neighbor_right = NodePath("../Username")
+focus_next = NodePath("../HBoxContainer/ConfirmButton")
+focus_previous = NodePath("../Username")
+theme_override_fonts/font = ExtResource("2_pxjwh")
+placeholder_text = "Confirm Password"
+virtual_keyboard_type = 6
+secret = true
+secret_character = "*"
+
+[node name="ColorPicker" type="ColorPicker" parent="." unique_id=2041952636]
+layout_mode = 2
+picker_shape = 2
+sampler_visible = false
+color_modes_visible = false
+sliders_visible = false
+hex_visible = false
+presets_visible = false
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=209936435]
+layout_mode = 2
+size_flags_horizontal = 4
+
+[node name="ConfirmButton" type="Button" parent="HBoxContainer" unique_id=1026806158]
+layout_mode = 2
+focus_neighbor_left = NodePath("../../Password")
+focus_previous = NodePath("../../Password")
+theme_override_fonts/font = ExtResource("2_pxjwh")
+text = "Confirm"
+
+[node name="Cancel" type="Button" parent="HBoxContainer" unique_id=767146190]
+layout_mode = 2
+focus_neighbor_right = NodePath("../../Username")
+focus_next = NodePath("../../Username")
+theme_override_fonts/font = ExtResource("2_pxjwh")
+text = "Cancel"

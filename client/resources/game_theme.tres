@@ -1,0 +1,9 @@
+[gd_resource type="Theme" format=3 uid="uid://bescrmgmffkug"]
+
+[resource]
+Button/font_sizes/font_size = 24
+Label/font_sizes/font_size = 24
+LineEdit/font_sizes/font_size = 24
+RichTextLabel/colors/font_shadow_color = Color(0.1882353, 0.09019608, 0.03137255, 1)
+RichTextLabel/font_sizes/bold_font_size = 24
+RichTextLabel/font_sizes/normal_font_size = 24
