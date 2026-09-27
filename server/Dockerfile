@@ -15,7 +15,7 @@ WORKDIR /gameserver
 
 COPY --from=build /gameserver/main /gameserver/main
 
-ENV PORT=8080
-EXPOSE 8080
+ENV PORT=10000
+EXPOSE 10000
 
 CMD ["/gameserver/main", "--config", ".env"]
