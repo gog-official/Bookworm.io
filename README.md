@@ -58,10 +58,13 @@ secre and Fun to play.
 # WHAT WE ARE USING:-->
     -Godot 4
 For the game client and everything running on the player's side.
+
     -Golang 
 For the multiplayer backend and game server.
+
     -WebSockets
 For real-time communication between the clients and server.
+
     -SQLite
 For the database to store player information and game state.
 
